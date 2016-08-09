@@ -15,7 +15,7 @@ import java.net.InetAddress;
 
 
 public class PingActivity extends FragmentActivity  implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.PeerListListener,
-        LaunchFragment.OnDeviceSelected,GameFragment.OnGameFragmentInteractionListener {
+        LaunchFragment.OnDeviceSelected,GameFragment.OnGameFragmentInteractionListener, WiFiDirectBroadcastReceiver.OnWiFiDirectBroadcastInteractionListener {
 
     private WifiP2pManager mManager;
     private static WifiP2pManager.Channel mChannel;
@@ -48,8 +48,8 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         gameFragment = new GameFragment();
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.frame_container, launchFragment, "services").commit();
-        if (gameFragment.isAdded()) { ft.hide(gameFragment); }
+        ft.replace(R.id.frame_container, launchFragment, "services");
+        ft.commit();
 
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this, this, this);
 
@@ -59,6 +59,17 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
     protected void onResume() {
         super.onResume();
         registerReceiver(mReceiver, mIntentFilter);
+        peersAgain();
+    }
+    /* unregister the broadcast receiver */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
+    }
+
+
+    protected void peersAgain() {
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -70,12 +81,6 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 addMessage("Discovery failure");
             }
         });
-    }
-    /* unregister the broadcast receiver */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(mReceiver);
     }
 
 
@@ -93,31 +98,43 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         // InetAddress from WifiP2pInfo struct.
         InetAddress groupOwnerAddress = info.groupOwnerAddress;
 
+
         // After the group negotiation, we can determine the group owner.
-        if (info.groupFormed && info.isGroupOwner) {
+        if (!info.groupFormed){
+            addMessage("NO Group Formed");
+            return;
+        }
+
+        if (info.isGroupOwner) {
 
             addMessage("Group Formed.  I am the owner");
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             gameFragment.changeOwnership(true);
-            ft.add(R.id.frame_container, gameFragment, "game").commit();
-            if (launchFragment.isAdded()) { ft.hide(launchFragment); }
-
-        } else if (info.groupFormed) {
+        } else {
 
             addMessage("Group Formed.  I am NOT the owner");
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             gameFragment.changeOwnership(false);
-            ft.add(R.id.frame_container, gameFragment, "game").commit();
-            if (launchFragment.isAdded()) { ft.hide(launchFragment); }
-
         }
-        else
-            addMessage("NO Group Formed");
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.frame_container, gameFragment, "game");
+        ft.commit();
+
+
+
+
     }
 
     public void addMessage(String text) {
         if (launchFragment != null) launchFragment.addMessage(text);
     }
+    public void changeConnectionState(boolean state) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+        ft.replace(R.id.frame_container, launchFragment, "services");
+        ft.commit();
+        peersAgain();
+    }
+
 
     public void connect(int position) {
 
@@ -145,8 +162,25 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         }
     }
 
-    public void onGameFragmentInteraction(String message){
+    public void closeConnection(int code){
 
+        if (mManager != null && mChannel != null) {
+
+            mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+
+                @Override
+                public void onSuccess() {
+                    addMessage("Disconnection Success");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    addMessage("Disconnection Failure");
+                }
+            });
+
+
+        }
     }
 
 }

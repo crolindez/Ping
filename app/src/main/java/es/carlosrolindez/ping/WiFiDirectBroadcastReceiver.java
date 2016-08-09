@@ -14,21 +14,23 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
-    private PingActivity mActivity;
+//    private PingActivity mActivity;
     private WifiP2pManager.PeerListListener mPeerListListener;
     private WifiP2pManager.ConnectionInfoListener mConnectionListener;
+    private OnWiFiDirectBroadcastInteractionListener mListener;
 
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
                                        WifiP2pManager.PeerListListener peerListListener,
                                        WifiP2pManager.ConnectionInfoListener connectionListener,
-                                       PingActivity activity) {
+                                       OnWiFiDirectBroadcastInteractionListener activityListener) {
         super();
         mManager = manager;
         mChannel = channel;
-        mActivity = activity;
+//        mActivity = activity;
         mPeerListListener = peerListListener;
         mConnectionListener = connectionListener;
+        mListener = activityListener;
     }
 
     @Override
@@ -38,15 +40,15 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
             if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-                mActivity.addMessage("Wifi P2P enabled");
+                mListener.addMessage("Wifi P2P enabled");
             } else {
-                mActivity.addMessage("Wifi P2P NOT enabled");
+                mListener.addMessage("Wifi P2P NOT enabled");
 
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
 
             if (mManager != null) {
-                mActivity.addMessage("Wifi P2P request Peers");
+                mListener.addMessage("Wifi P2P request Peers");
                 mManager.requestPeers(mChannel, mPeerListListener);
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
@@ -58,10 +60,22 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
             if (networkInfo.isConnected()) {
                 mManager.requestConnectionInfo(mChannel, mConnectionListener);
+            } else {
+                mListener.addMessage("connection changed to disconnected");
+                mListener.changeConnectionState(false);
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-            // Respond to this device's wifi state changing
+            if (mManager == null) {
+                return;
+            }
+            mListener.addMessage("Device Changed action");
+
         }
+    }
+
+    public interface OnWiFiDirectBroadcastInteractionListener {
+        void addMessage(String message);
+        void changeConnectionState(boolean state);
     }
 
 }

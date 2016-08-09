@@ -10,14 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link GameFragment.OnGameFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link GameFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class GameFragment extends Fragment {
 
     public boolean connectionOwner;
@@ -50,6 +43,12 @@ public class GameFragment extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        mListener.closeConnection(0);
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnGameFragmentInteractionListener) {
@@ -77,7 +76,6 @@ public class GameFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnGameFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onGameFragmentInteraction(String message);
+        void closeConnection(int code);
     }
 }
