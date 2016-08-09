@@ -77,7 +77,7 @@ public class LaunchFragment extends Fragment {
         peerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-
+            mListener.connect(position);
 
             }
 
@@ -87,7 +87,7 @@ public class LaunchFragment extends Fragment {
 
 
     public void addMessage(String message) {
-        messageList.add(0, "Action Listener Failure");
+        messageList.add(0, message);
         messageListAdapter.notifyDataSetChanged();
     }
 

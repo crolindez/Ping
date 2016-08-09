@@ -9,6 +9,7 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 
 import java.net.InetAddress;
 
@@ -44,10 +45,13 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
         launchFragment = new LaunchFragment();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.frame_container, launchFragment, "services").commit();
+        gameFragment = new GameFragment();
 
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this, this);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.frame_container, launchFragment, "services").commit();
+        if (gameFragment.isAdded()) { ft.hide(gameFragment); }
+
+        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this, this, this);
 
     }
 
@@ -93,13 +97,26 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         if (info.groupFormed && info.isGroupOwner) {
 
             addMessage("Group Formed.  I am the owner");
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            gameFragment.changeOwnership(true);
+            ft.add(R.id.frame_container, gameFragment, "game").commit();
+            if (launchFragment.isAdded()) { ft.hide(launchFragment); }
+
         } else if (info.groupFormed) {
+
             addMessage("Group Formed.  I am NOT the owner");
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            gameFragment.changeOwnership(false);
+            ft.add(R.id.frame_container, gameFragment, "game").commit();
+            if (launchFragment.isAdded()) { ft.hide(launchFragment); }
+
         }
+        else
+            addMessage("NO Group Formed");
     }
 
     public void addMessage(String text) {
-        if (launchFragment != null) launchFragment.addMessage("Discovery failure");
+        if (launchFragment != null) launchFragment.addMessage(text);
     }
 
     public void connect(int position) {
