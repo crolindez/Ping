@@ -89,7 +89,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
                 Log.d(TAG, readMessage);
- //               (chatFragment).pushMessage("Buddy: " + readMessage);
+                gameFragment.pushMessage(readMessage);
                 break;
 
             case MY_HANDLE:
@@ -98,7 +98,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.frame_container, gameFragment, "game");
                 ft.commit();
-
+                break;
 
         }
         return true;
@@ -145,13 +145,13 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
 
         if (ownership) {
-            Log.d(TAG, "Connected as group owner");
+            Log.e(TAG, "Connected as group owner");
             addMessage("Group Formed.  I am the owner");
             thread = new GroupOwnerSocketHandler(handler);
             thread.start();
 
         } else {
-            Log.d(TAG, "Connected as peer");
+            Log.e(TAG, "Connected as peer");
             addMessage("Group Formed.  I am NOT the owner");
             thread = new ClientSocketHandler(handler, info.groupOwnerAddress);
             thread.start();
@@ -173,12 +173,12 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
     }
 
 
-    public void connect(int position) {
+    public void connect(String name) {
 
-        int index = 0;
+
 
         for (WifiP2pDevice device : mDeviceList.getDeviceList()) {
-            if (index == position) {
+            if (name.equals(device.deviceName)) {
                 WifiP2pConfig config = new WifiP2pConfig();
                 config.deviceAddress = device.deviceAddress;
                 mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
@@ -195,7 +195,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 });
                 break;
             }
-            index++;
+ 
         }
     }
 

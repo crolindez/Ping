@@ -21,6 +21,7 @@ public class GameManager implements Runnable {
     public GameManager(Socket socket, Handler handler) {
         this.socket = socket;
         this.handler = handler;
+        Log.e(TAG, "GameManager created");
     }
 
     private InputStream iStream;
@@ -38,6 +39,7 @@ public class GameManager implements Runnable {
             handler.obtainMessage(PingActivity.MY_HANDLE, this)
                     .sendToTarget();
 
+
             while (true) {
                 try {
                     // Read from the InputStream
@@ -47,7 +49,7 @@ public class GameManager implements Runnable {
                     }
 
                     // Send the obtained bytes to the UI Activity
-                    Log.d(TAG, "Rec:" + String.valueOf(buffer));
+                    Log.e(TAG, "Rec:" + String.valueOf(buffer));
                     handler.obtainMessage(PingActivity.MESSAGE_READ,
                             bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {

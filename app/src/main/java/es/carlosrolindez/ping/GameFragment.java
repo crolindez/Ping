@@ -2,12 +2,14 @@ package es.carlosrolindez.ping;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.nio.charset.Charset;
 
 
 public class GameFragment extends Fragment {
@@ -19,6 +21,10 @@ public class GameFragment extends Fragment {
     private GameManager gameManager = null;
 
     private OnGameFragmentInteractionListener mListener;
+
+    private TextView title;
+    private TextView message;
+    private String player;
 
     public GameFragment() {
         connectionOwner = false;
@@ -35,13 +41,25 @@ public class GameFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mContentView = inflater.inflate(R.layout.fragment_game, container, false);
-        TextView text = (TextView) mContentView.findViewById(R.id.title);
-        String player;
+        title = (TextView) mContentView.findViewById(R.id.title);
+        message = (TextView) mContentView.findViewById(R.id.message_player);
+
+
         if (connectionOwner)
             player = "Player 1";
         else
             player = "Player 2";
-        text.setText(player);
+        title.setText(player);
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                String message = "Hello from " + player;
+                gameManager.write(message.getBytes(Charset.defaultCharset()));
+            }
+        }, 500);
+
         return mContentView;
     }
 
@@ -68,16 +86,11 @@ public class GameFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    public void pushMessage(String mes) {
+        if (message!=null)
+            message.setText(mes);
+    }
+
     public interface OnGameFragmentInteractionListener {
         void closeConnection(int code);
 

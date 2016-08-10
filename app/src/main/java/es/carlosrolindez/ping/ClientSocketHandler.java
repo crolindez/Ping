@@ -11,13 +11,13 @@ import java.net.Socket;
 public class ClientSocketHandler extends Thread {
 
     private static final String TAG = "ClientSocketHandler";
-    private Handler handler;
+    private Handler mHandler;
     private GameManager chat;
     private InetAddress mAddress;
 
     public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress) {
-        this.handler = handler;
-        this.mAddress = groupOwnerAddress;
+        mHandler = handler;
+        mAddress = groupOwnerAddress;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ClientSocketHandler extends Thread {
             socket.bind(null);
             socket.connect(new InetSocketAddress(mAddress.getHostAddress(),
                     PingActivity.SERVER_PORT), 5000);
-            chat = new GameManager(socket, handler);
+            chat = new GameManager(socket, mHandler);
             new Thread(chat).start();
         } catch (IOException e) {
             e.printStackTrace();

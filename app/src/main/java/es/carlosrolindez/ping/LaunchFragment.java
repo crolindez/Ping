@@ -78,7 +78,7 @@ public class LaunchFragment extends Fragment {
         peerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-            mListener.connect(position);
+            mListener.connect(peerList.get(position));
 
             }
 
@@ -106,7 +106,7 @@ public class LaunchFragment extends Fragment {
 
 
     public interface OnDeviceSelected {
-        void connect(int index);
+        void connect(String name);
     }
 
 
