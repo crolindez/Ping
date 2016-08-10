@@ -12,13 +12,14 @@ import android.net.wifi.p2p.WifiP2pManager;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
+    private static final String TAG = "WiFiDirectBroadcastReceiver";
+
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
 //    private PingActivity mActivity;
     private WifiP2pManager.PeerListListener mPeerListListener;
     private WifiP2pManager.ConnectionInfoListener mConnectionListener;
     private OnWiFiDirectBroadcastInteractionListener mListener;
-
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
                                        WifiP2pManager.PeerListListener peerListListener,

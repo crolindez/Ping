@@ -1,7 +1,6 @@
 package es.carlosrolindez.ping;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,8 +12,11 @@ import android.widget.TextView;
 
 public class GameFragment extends Fragment {
 
-    public boolean connectionOwner;
+    private static final String TAG = "GameFragment";
+
+    private boolean connectionOwner;
     private View mContentView = null;
+    private GameManager gameManager = null;
 
     private OnGameFragmentInteractionListener mListener;
 
@@ -22,8 +24,9 @@ public class GameFragment extends Fragment {
         connectionOwner = false;
     }
 
-    public void changeOwnership(boolean ownership) {
+    public void setGameFragment(GameManager manager, boolean ownership) {
         connectionOwner = ownership;
+        gameManager = manager;
     }
 
 
@@ -77,5 +80,6 @@ public class GameFragment extends Fragment {
      */
     public interface OnGameFragmentInteractionListener {
         void closeConnection(int code);
+
     }
 }

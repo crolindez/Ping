@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 public class LaunchFragment extends Fragment {
 
+    private static final String TAG = "LaunchFragment";
 
     private OnDeviceSelected mListener;
 

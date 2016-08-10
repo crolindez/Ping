@@ -1,31 +1,44 @@
 package es.carlosrolindez.ping;
 
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import java.net.InetAddress;
 
 
 public class PingActivity extends FragmentActivity  implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.PeerListListener,
-        LaunchFragment.OnDeviceSelected,GameFragment.OnGameFragmentInteractionListener, WiFiDirectBroadcastReceiver.OnWiFiDirectBroadcastInteractionListener {
+        LaunchFragment.OnDeviceSelected,GameFragment.OnGameFragmentInteractionListener, WiFiDirectBroadcastReceiver.OnWiFiDirectBroadcastInteractionListener,
+        Handler.Callback {
+
+    private static final String TAG = "PingActivity";
+
+    public static final int SERVER_PORT = 4545;
+
+    public static final int MESSAGE_READ = 0x400 + 1;
+    public static final int MY_HANDLE = 0x400 + 2;
 
     private WifiP2pManager mManager;
-    private static WifiP2pManager.Channel mChannel;
+    private WifiP2pManager.Channel mChannel;
     private WiFiDirectBroadcastReceiver mReceiver = null;
-    private static WifiP2pDeviceList mDeviceList;
+    private WifiP2pDeviceList mDeviceList;
 
     private final IntentFilter mIntentFilter = new IntentFilter();
+    private Handler handler = new Handler(this);
 
     private LaunchFragment launchFragment;
     private GameFragment gameFragment;
+
+    private boolean ownership = false;
 
 
 
@@ -68,6 +81,28 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         unregisterReceiver(mReceiver);
     }
 
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+            case MESSAGE_READ:
+                byte[] readBuf = (byte[]) msg.obj;
+                // construct a string from the valid bytes in the buffer
+                String readMessage = new String(readBuf, 0, msg.arg1);
+                Log.d(TAG, readMessage);
+ //               (chatFragment).pushMessage("Buddy: " + readMessage);
+                break;
+
+            case MY_HANDLE:
+                Object obj = msg.obj;
+                gameFragment.setGameFragment((GameManager) obj, ownership);
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.frame_container, gameFragment, "game");
+                ft.commit();
+
+
+        }
+        return true;
+    }
 
     protected void peersAgain() {
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
@@ -97,6 +132,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
         // InetAddress from WifiP2pInfo struct.
         InetAddress groupOwnerAddress = info.groupOwnerAddress;
+        Thread thread;
 
 
         // After the group negotiation, we can determine the group owner.
@@ -105,20 +141,21 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
             return;
         }
 
-        if (info.isGroupOwner) {
+        ownership = info.isGroupOwner;
 
+
+        if (ownership) {
+            Log.d(TAG, "Connected as group owner");
             addMessage("Group Formed.  I am the owner");
-            gameFragment.changeOwnership(true);
+            thread = new GroupOwnerSocketHandler(handler);
+            thread.start();
+
         } else {
-
+            Log.d(TAG, "Connected as peer");
             addMessage("Group Formed.  I am NOT the owner");
-            gameFragment.changeOwnership(false);
+            thread = new ClientSocketHandler(handler, info.groupOwnerAddress);
+            thread.start();
         }
-
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.frame_container, gameFragment, "game");
-        ft.commit();
-
 
 
 
