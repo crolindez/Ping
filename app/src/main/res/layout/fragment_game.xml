@@ -7,8 +7,9 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:id="@+id/game_zone"
         android:weightSum="1">
-
 
         <TextView
             android:text="TextView"
@@ -26,5 +27,42 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="46dp" />
+
+
+        <ImageView
+            android:src="@drawable/brick"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:id="@+id/ball"/>
+
+        <ImageView
+            android:src="@drawable/brick"
+            android:layout_width="7dip"
+            android:layout_height="7dip"
+            android:id="@+id/player1"
+            android:scaleType="fitXY" />
+        <ImageView
+            android:src="@drawable/brick"
+            android:layout_width="7dip"
+            android:layout_height="7dip"
+            android:id="@+id/player2"
+            android:scaleType="fitXY" />
+        <ImageView
+            android:src="@drawable/brick"
+            android:layout_width="100dip"
+            android:layout_height="1dip"
+            android:id="@+id/topbar"
+            android:scaleType="fitXY"/>
+        <ImageView
+            android:src="@drawable/brick"
+            android:layout_width="100dip"
+            android:layout_height="1dip"
+            android:id="@+id/bottombar"
+            android:scaleType="fitXY" />
+
+
+
     </RelativeLayout>
+
+
 </FrameLayout>
