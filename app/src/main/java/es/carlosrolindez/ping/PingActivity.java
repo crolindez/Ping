@@ -195,7 +195,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 });
                 break;
             }
- 
+
         }
     }
 
@@ -203,7 +203,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
         if (mManager != null && mChannel != null) {
 
-            mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+  /*          mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
 
                 @Override
                 public void onSuccess() {
@@ -216,8 +216,9 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 }
             });
 
-
+*/
         }
     }
+
 
 }

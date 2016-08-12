@@ -1,18 +1,20 @@
 package es.carlosrolindez.ping;
 
 import android.content.Context;
-import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
@@ -31,10 +33,15 @@ public class LaunchFragment extends Fragment {
 
     private View mContentView = null;
 
+    private int width, height;
+    private double xGU, yGU; // game units
+    private final double XGU = 200;
+    private final double YGU = 100;
+    private int iniX, iniY;
+
     public LaunchFragment() {
         // Required empty public constructor
     }
-
 
 
     @Override
@@ -42,6 +49,49 @@ public class LaunchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
+
+        LinearLayout window = (LinearLayout) mContentView.findViewById(R.id.game_zone);
+        window.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // Preventing extra work because method will be called many times.
+                if(height == (bottom - top))
+                    return;
+
+                height = (bottom - top);
+                width = right - left;
+                iniY = top;
+                iniX = left;
+                xGU = width / XGU;
+                yGU = height / YGU;
+
+                ImageView ball = (ImageView) mContentView.findViewById(R.id.ball);
+                ball.setLayoutParams(new RelativeLayout.LayoutParams((int)(5*xGU), (int) (5*yGU)));
+                ball.setX((float)(98*xGU));
+                ball.setY((float)(48*yGU));
+
+                ImageView player1 = (ImageView) mContentView.findViewById(R.id.player1);
+                player1.setLayoutParams(new RelativeLayout.LayoutParams((int)(3*xGU), (int) (25*xGU)));
+                player1.setX((float)(5*xGU));
+                player1.setY((float)(height/2 - 10*yGU));
+
+                ImageView player2 = (ImageView) mContentView.findViewById(R.id.player2);
+                player2.setLayoutParams(new RelativeLayout.LayoutParams((int)(3*xGU), (int) (25*xGU)));
+                player2.setX((float)(193*xGU));
+                player2.setY((float)(height/2 - 10*yGU));
+
+                ImageView topbar = (ImageView) mContentView.findViewById(R.id.topbar);
+                topbar.setLayoutParams(new RelativeLayout.LayoutParams((int)(190*xGU), (int) (2*xGU)));
+                topbar.setX((float)(5*xGU));
+                topbar.setY((float)(2*yGU));
+
+                ImageView bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
+                bottombar.setLayoutParams(new RelativeLayout.LayoutParams((int)(190*xGU), (int) (2*xGU)));
+                bottombar.setX((float)(5*xGU));
+                bottombar.setY((float)(96*yGU));
+
+            }
+        });
         return mContentView;
     }
 
@@ -55,6 +105,12 @@ public class LaunchFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnDeviceSelected");
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
     }
 
     @Override
@@ -83,6 +139,7 @@ public class LaunchFragment extends Fragment {
             }
 
         });
+
     }
 
 
@@ -102,6 +159,25 @@ public class LaunchFragment extends Fragment {
 
         messageList.add(0, "New device list");
         messageListAdapter.notifyDataSetChanged();
+
+    //    LinearLayout window =(LinearLayout) mContentView.findViewById(R.id.game_zone);
+
+     //   height = window.getHeight();
+     //   width = window.getWidth();
+        //       ViewGroup.LayoutParams params = window.getLayoutParams();
+        //       height = params.height;
+        //       width = params.width;
+     //   xGU = width / XGU;
+     //   yGU = height / YGU;
+
+        messageList.add(0, "width = " + width);
+        messageList.add(0, "height = " + height);
+        messageList.add(0, "xGU = " + xGU);
+        messageList.add(0, "yGU = " + yGU);
+        messageListAdapter.notifyDataSetChanged();
+
+
+
     }
 
 
