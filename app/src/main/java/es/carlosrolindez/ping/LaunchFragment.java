@@ -47,13 +47,13 @@ public class LaunchFragment extends Fragment {
         // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
-        boolean isImmersiveModeEnabled =
+    /*    boolean isImmersiveModeEnabled =
                 ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
         if (isImmersiveModeEnabled) {
             Log.e(TAG, "Turning immersive mode mode off. ");
         } else {
             Log.e(TAG, "Turning immersive mode mode on.");
-        }
+        } */
 
         // Navigation bar hiding:  Backwards compatible to ICS.
         if (Build.VERSION.SDK_INT >= 14) {

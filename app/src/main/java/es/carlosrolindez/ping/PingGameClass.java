@@ -10,6 +10,7 @@ import static java.lang.Math.abs;
 
 
 public class PingGameClass {
+    private static final String TAG = "PingGameClass";
 
     // PING GAME STATES
     public static final int START = 0x10;
@@ -68,16 +69,17 @@ public class PingGameClass {
 
     PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar) {
         gameState = START;
-        mPlayerLeft = new PlayerClass(playerLeft, PLAYER_LEFT);
-        mPlayerRight = new PlayerClass(playerRight, PLAYER_RIGHT);
-        mBall = new BallClass(ball);
-        mTopBar = new BarClass(topBar, TOP_BAR);
-        mBottomBar = new BarClass(bottomBar, BOTTOM_BAR);
 
         width = XGU; // default values.  Must be updated by UpdateWindowConstanst
         height = YGU;
         xGU = 1.0;
         yGU = 1.0;
+
+        mPlayerLeft = new PlayerClass(playerLeft, PLAYER_LEFT);
+        mPlayerRight = new PlayerClass(playerRight, PLAYER_RIGHT);
+        mBall = new BallClass(ball);
+        mTopBar = new BarClass(topBar, TOP_BAR);
+        mBottomBar = new BarClass(bottomBar, BOTTOM_BAR);
 
         tone(ToneGenerator.TONE_PROP_BEEP2);
 
@@ -90,14 +92,19 @@ public class PingGameClass {
 
         height = (bottom - top);
         width = right - left;
-        xGU = width / XGU;
-        yGU = height / YGU;
+        xGU = width / (float)XGU;
+        yGU = height / (float)YGU;
 
         mBall.resizeImage((int)(SIZE_BALL*xGU), (int) (SIZE_BALL*yGU));
+        mBall.setPosition();
         mPlayerLeft.resizeImage((int)(WIDTH_PLAYER*xGU), (int) (HEIGHT_PLAYER*yGU));
+        mPlayerLeft.setPosition();
         mPlayerRight.resizeImage((int)(WIDTH_PLAYER*xGU), (int) (HEIGHT_PLAYER*yGU));
+        mPlayerRight.setPosition();
         mTopBar.resizeImage((int)(WIDTH_BAR*xGU), (int) (HEIGHT_BAR*yGU));
+        mTopBar.setPosition();
         mBottomBar.resizeImage((int)(WIDTH_BAR*xGU), (int) (HEIGHT_BAR*yGU));
+        mBottomBar.setPosition();
 
     }
 
@@ -125,12 +132,18 @@ public class PingGameClass {
 
     public void moveBall() {
         float nextX,nextY;
+        float seqX,seqY;
 
         nextX = mBall.nextBouncingXPosition();
+        seqX = mBall.nextSequenceXPosition();
         nextY = mBall.nextBouncingYPosition();
+        seqY = mBall.nextSequenceYPosition();
         mBall.setPosition(nextX, nextY);
-        if ( (nextX != mBall.nextSequenceXPosition()) || (nextY !=mBall.nextSequenceYPosition()) )
+        if ( (nextX != seqX ) || (nextY != seqY) ) {
             tone(ToneGenerator.TONE_DTMF_8,50);
+            if (nextX != seqX) mBall.bounceX();
+            if (nextY != seqY) mBall.bounceY();
+        }
     }
 
     public class PositionClass {
@@ -156,6 +169,12 @@ public class PingGameClass {
             yPosition = y;
             mView.setX((float) (xPosition * xGU));
             mView.setY((float) (yPosition * yGU));
+
+        }
+        public void setPosition() {
+            mView.setX((float) (xPosition * xGU));
+            mView.setY((float) (yPosition * yGU));
+
         }
 
         public void setYPosition(float y) {
@@ -174,6 +193,14 @@ public class PingGameClass {
 
         public void setYdelta(float y) {
             yDelta = y;
+        }
+
+        public void bounceX() {
+            xDelta = -xDelta;
+        }
+
+        public void bounceY() {
+            yDelta = -yDelta;
         }
 
         public float nextBouncingYPosition() {
@@ -244,11 +271,11 @@ public class PingGameClass {
 
         public void resetPosition() {
             setPosition(INIT_X_BALL, INIT_Y_BALL);
-            setXdelta(1);
+            setXdelta(2);
             if ((Math.random() * 2) > 1) {
-                setYdelta(0.25f);
+                setYdelta(0.60f);
             } else {
-                setYdelta(-0.25f);
+                setYdelta(-0.60f);
             }
         }
 

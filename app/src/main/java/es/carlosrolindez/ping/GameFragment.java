@@ -31,10 +31,10 @@ public class GameFragment extends Fragment {
     private String message;
 
     // MESSAGE HEADERS
-    private static String BALL = "BALL ";
-    private static String PLAYER = "PLAYER";
-    private static String INIT = "INIT";
-    private static String GOAL = "GOAL";
+    private final String BALL = "BALL ";
+    private final String PLAYER = "PLAYER";
+    private final String INIT = "INIT";
+    private final String GOAL = "GOAL";
 
     private Handler handler = new Handler();
 
@@ -59,21 +59,6 @@ public class GameFragment extends Fragment {
 
         title = (TextView) mContentView.findViewById(R.id.title);
         
-        if (connectionOwner) {
-            player = "Player 1";
-
-        } else {
-            player = "Player 2";
-
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    message = INIT;
-                    gameManager.write(message.getBytes(Charset.defaultCharset()));
-                }
-            }, 500);
-            pingGame.setState(pingGame.PLAYING);
-        }
 
         title.setText(player);
 
@@ -103,6 +88,7 @@ public class GameFragment extends Fragment {
 
         pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar);
 
+
         RelativeLayout window = (RelativeLayout) mContentView.findViewById(R.id.game_zone);
         window.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -113,6 +99,23 @@ public class GameFragment extends Fragment {
 
             }
         });
+
+        if (connectionOwner) {
+            player = "Player 1";
+            pingGame.setState(pingGame.PLAYING);
+
+        } else {
+            player = "Player 2";
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    message = INIT;
+                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                }
+            }, 500);
+
+
+        }
 
 
         return mContentView;
@@ -150,7 +153,7 @@ public class GameFragment extends Fragment {
         String arg[] = mes.split(" ");
         if (arg[0].equals(INIT)) {
             pingGame.setState(pingGame.PLAYING);
-            final int delay =200;
+            final int delay =50;
             handler.postDelayed(new Runnable(){
                 @Override
                 public void run(){
@@ -164,9 +167,9 @@ public class GameFragment extends Fragment {
         } else if (arg[0].equals(PLAYER)) {
 
         } else if (arg[0].equals(GOAL)) {
-            
+
         } else {
-            //// TODO: 21/08/2016  
+            //// TODO: 21/08/2016
         }
     }
 
