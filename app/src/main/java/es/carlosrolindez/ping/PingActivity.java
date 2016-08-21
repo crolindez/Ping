@@ -24,7 +24,8 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
     public static final int SERVER_PORT = 4545;
 
-    public static final int MESSAGE_READ = 0x400 + 1;
+
+    public static final int MESSAGE = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
 
     private WifiP2pManager mManager;
@@ -84,7 +85,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
     @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
-            case MESSAGE_READ:
+            case MESSAGE:
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
@@ -94,7 +95,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
             case MY_HANDLE:
                 Object obj = msg.obj;
-                gameFragment.setGameFragment((GameManager) obj, ownership);
+                gameFragment.setGameFragment((GameCommManager) obj, ownership);
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.frame_container, gameFragment, "game");
                 ft.commit();
@@ -203,7 +204,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
         if (mManager != null && mChannel != null) {
 
-  /*          mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+            mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
 
                 @Override
                 public void onSuccess() {
@@ -216,7 +217,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 }
             });
 
-*/
+
         }
     }
 

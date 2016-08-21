@@ -13,20 +13,20 @@ import java.net.Socket;
  * Handles reading and writing of messages with socket buffers. Uses a Handler
  * to post messages to UI thread for UI updates.
  */
-public class GameManager implements Runnable {
+public class GameCommManager implements Runnable {
 
     private Socket socket = null;
     private Handler handler;
 
-    public GameManager(Socket socket, Handler handler) {
+    public GameCommManager(Socket socket, Handler handler) {
         this.socket = socket;
         this.handler = handler;
-        Log.e(TAG, "GameManager created");
+        Log.e(TAG, "GameCommManager created");
     }
 
     private InputStream iStream;
     private OutputStream oStream;
-    private static final String TAG = "GameManager";
+    private static final String TAG = "GameCommManager";
 
     @Override
     public void run() {
@@ -50,7 +50,7 @@ public class GameManager implements Runnable {
 
                     // Send the obtained bytes to the UI Activity
                     Log.e(TAG, "Rec:" + String.valueOf(buffer));
-                    handler.obtainMessage(PingActivity.MESSAGE_READ,
+                    handler.obtainMessage(PingActivity.MESSAGE,
                             bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);

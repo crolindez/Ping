@@ -5,12 +5,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -23,24 +21,30 @@ public class GameFragment extends Fragment {
 
     private boolean connectionOwner;
     private View mContentView = null;
-    private GameManager gameManager = null;
+    private GameCommManager gameManager = null;
 
     private OnGameFragmentInteractionListener mListener;
 
     private TextView title;
-    private TextView message;
     private String player;
 
-    private int width, height;
-    private double xGU, yGU; // game units
-    private final double XGU = 200;
-    private final double YGU = 100;
-    private int iniX, iniY;
+    private String message;
+
+    // MESSAGE HEADERS
+    private static String BALL = "BALL ";
+    private static String PLAYER = "PLAYER";
+    private static String INIT = "INIT";
+    private static String GOAL = "GOAL";
+
+    private Handler handler = new Handler();
+
+    private PingGameClass pingGame;
+
     public GameFragment() {
         connectionOwner = false;
     }
 
-    public void setGameFragment(GameManager manager, boolean ownership) {
+    public void setGameFragment(GameCommManager manager, boolean ownership) {
         connectionOwner = ownership;
         gameManager = manager;
     }
@@ -51,24 +55,27 @@ public class GameFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mContentView = inflater.inflate(R.layout.fragment_game, container, false);
+        getActivity().getActionBar().hide();
+
         title = (TextView) mContentView.findViewById(R.id.title);
-        message = (TextView) mContentView.findViewById(R.id.message_player);
-
-
-        if (connectionOwner)
+        
+        if (connectionOwner) {
             player = "Player 1";
-        else
-            player = "Player 2";
-        title.setText(player);
 
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                String message = "Hello from " + player;
-                gameManager.write(message.getBytes(Charset.defaultCharset()));
-            }
-        }, 500);
+        } else {
+            player = "Player 2";
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    message = INIT;
+                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                }
+            }, 500);
+            pingGame.setState(pingGame.PLAYING);
+        }
+
+        title.setText(player);
 
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
 
@@ -82,51 +89,27 @@ public class GameFragment extends Fragment {
             uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
         }
 
-        if (Build.VERSION.SDK_INT >= 18) {
+        if (Build.VERSION.SDK_INT >= 19) {
             uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+
+        ImageView ball = (ImageView) mContentView.findViewById(R.id.ball);
+        ImageView playerLeft = (ImageView) mContentView.findViewById(R.id.player1);
+        ImageView playerRight = (ImageView) mContentView.findViewById(R.id.player2);
+        ImageView topbar = (ImageView) mContentView.findViewById(R.id.topbar);
+        ImageView bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
+
+        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar);
 
         RelativeLayout window = (RelativeLayout) mContentView.findViewById(R.id.game_zone);
         window.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 // Preventing extra work because method will be called many times.
-                if(height == (bottom - top))
-                    return;
+                pingGame.updateWindowConstants(top,bottom,left,right);
 
-                height = (bottom - top);
-                width = right - left;
-                iniY = top;
-                iniX = left;
-                xGU = width / XGU;
-                yGU = height / YGU;
-
-                ImageView ball = (ImageView) mContentView.findViewById(R.id.ball);
-                ball.setLayoutParams(new RelativeLayout.LayoutParams((int)(5*xGU), (int) (5*yGU)));
-                ball.setX((float)(98*xGU));
-                ball.setY((float)(48*yGU));
-
-                ImageView player1 = (ImageView) mContentView.findViewById(R.id.player1);
-                player1.setLayoutParams(new RelativeLayout.LayoutParams((int)(3*xGU), (int) (25*xGU)));
-                player1.setX((float)(5*xGU));
-                player1.setY((float)(height/2 - 10*yGU));
-
-                ImageView player2 = (ImageView) mContentView.findViewById(R.id.player2);
-                player2.setLayoutParams(new RelativeLayout.LayoutParams((int)(3*xGU), (int) (25*xGU)));
-                player2.setX((float)(193*xGU));
-                player2.setY((float)(height/2 - 10*yGU));
-
-                ImageView topbar = (ImageView) mContentView.findViewById(R.id.topbar);
-                topbar.setLayoutParams(new RelativeLayout.LayoutParams((int)(190*xGU), (int) (2*xGU)));
-                topbar.setX((float)(5*xGU));
-                topbar.setY((float)(2*yGU));
-
-                ImageView bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
-                bottombar.setLayoutParams(new RelativeLayout.LayoutParams((int)(190*xGU), (int) (2*xGU)));
-                bottombar.setX((float)(5*xGU));
-                bottombar.setY((float)(96*yGU));
 
             }
         });
@@ -158,9 +141,33 @@ public class GameFragment extends Fragment {
         mListener = null;
     }
 
+
+    Handler h = new Handler();
+    int delay = 1000; //milliseconds
+
+
     public void pushMessage(String mes) {
-        if (message!=null)
-            message.setText(mes);
+        String arg[] = mes.split(" ");
+        if (arg[0].equals(INIT)) {
+            pingGame.setState(pingGame.PLAYING);
+            final int delay =200;
+            handler.postDelayed(new Runnable(){
+                @Override
+                public void run(){
+                    if (pingGame.getState()==pingGame.PLAYING)
+                    pingGame.moveBall();
+                    h.postDelayed(this, delay);
+                }
+            }, delay);
+        } else if (arg[0].equals(BALL)) {
+
+        } else if (arg[0].equals(PLAYER)) {
+
+        } else if (arg[0].equals(GOAL)) {
+            
+        } else {
+            //// TODO: 21/08/2016  
+        }
     }
 
     public interface OnGameFragmentInteractionListener {

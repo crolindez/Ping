@@ -42,7 +42,7 @@ public class LaunchFragment extends Fragment {
         // Inflate the layout for this fragment
         mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
 
-
+        getActivity().getActionBar().show();
 
         // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.

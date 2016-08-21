@@ -12,7 +12,7 @@ public class ClientSocketHandler extends Thread {
 
     private static final String TAG = "ClientSocketHandler";
     private Handler mHandler;
-    private GameManager chat;
+    private GameCommManager chat;
     private InetAddress mAddress;
 
     public ClientSocketHandler(Handler handler, InetAddress groupOwnerAddress) {
@@ -27,7 +27,7 @@ public class ClientSocketHandler extends Thread {
             socket.bind(null);
             socket.connect(new InetSocketAddress(mAddress.getHostAddress(),
                     PingActivity.SERVER_PORT), 5000);
-            chat = new GameManager(socket, mHandler);
+            chat = new GameCommManager(socket, mHandler);
             new Thread(chat).start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,7 +39,7 @@ public class ClientSocketHandler extends Thread {
         }
     }
 
-/*   public GameManager getChat() {
+/*   public GameCommManager getChat() {
         return chat;
     }*/
 
