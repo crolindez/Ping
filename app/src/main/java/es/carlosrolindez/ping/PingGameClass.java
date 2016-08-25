@@ -109,7 +109,11 @@ public class PingGameClass {
     }
 
     public void setState(int newState) {
+
         gameState = newState;
+        if (gameState == PLAYING)
+            tone(ToneGenerator.TONE_DTMF_8,50);
+
     }
 
     public int getState() {
@@ -117,11 +121,11 @@ public class PingGameClass {
     }
 
     private void tone(int tone,int duration) {
-        tg.startTone(tone, duration); //ToneGenerator.TONE_PROP_BEEP2,duration
+        tg.startTone(tone, duration);
     }
 
     private void tone(int tone) {
-        tg.startTone(tone); //ToneGenerator.TONE_PROP_BEEP2,duration
+        tg.startTone(tone);
     }
 
     public void reset() {
@@ -129,6 +133,18 @@ public class PingGameClass {
         mPlayerLeft.resetPosition();
         mPlayerRight.resetPosition();
     }
+
+    public String initMessage() {
+        reset();
+        String message = " " + (-mBall.getXdelta()) + " " + mBall.getYdelta();
+        return message;
+    }
+
+    public void setBall(float xDelta,float yDelta) {
+        mBall.setXdelta(xDelta);
+        mBall.setYdelta(yDelta);
+    }
+
 
     public void moveBall() {
         float nextX,nextY;
@@ -186,6 +202,15 @@ public class PingGameClass {
             xPosition = x;
             mView.setX((float) (xPosition * xGU));
         }
+
+        public float getXdelta() {
+            return xDelta;
+        }
+
+        public float getYdelta() {
+            return yDelta;
+        }
+
 
         public void setXdelta(float x) {
             xDelta = x;

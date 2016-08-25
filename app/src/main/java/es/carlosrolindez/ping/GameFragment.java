@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +32,7 @@ public class GameFragment extends Fragment {
     private String message;
 
     // MESSAGE HEADERS
-    private final String BALL = "BALL ";
+    private final String BALL = "BALL";
     private final String PLAYER = "PLAYER";
     private final String INIT = "INIT";
     private final String GOAL = "GOAL";
@@ -102,19 +103,27 @@ public class GameFragment extends Fragment {
 
         if (connectionOwner) {
             player = "Player 1";
-            pingGame.setState(pingGame.PLAYING);
-
+            pingGame.reset();
         } else {
             player = "Player 2";
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    message = INIT;
+                    message = INIT + pingGame.initMessage();
                     gameManager.write(message.getBytes(Charset.defaultCharset()));
                 }
             }, 500);
-
-
+            pingGame.setState(pingGame.PLAYING);
+            final int delay =50;
+            handler.postDelayed(new Runnable(){
+                @Override
+                public void run(){
+                    if (pingGame.getState()==pingGame.PLAYING) {
+                        pingGame.moveBall();
+                        h.postDelayed(this, delay);
+                    }
+                }
+            }, delay);
         }
 
 
@@ -151,15 +160,18 @@ public class GameFragment extends Fragment {
 
     public void pushMessage(String mes) {
         String arg[] = mes.split(" ");
-        if (arg[0].equals(INIT)) {
+        Log.e(TAG,mes);
+        if ((arg[0].equals(INIT)) && (arg.length == 3)) {
             pingGame.setState(pingGame.PLAYING);
+            pingGame.setBall(Float.parseFloat(arg[1]),Float.parseFloat(arg[2]));
             final int delay =50;
             handler.postDelayed(new Runnable(){
                 @Override
                 public void run(){
-                    if (pingGame.getState()==pingGame.PLAYING)
-                    pingGame.moveBall();
-                    h.postDelayed(this, delay);
+                    if (pingGame.getState()==pingGame.PLAYING) {
+                        pingGame.moveBall();
+                        h.postDelayed(this, delay);
+                    }
                 }
             }, delay);
         } else if (arg[0].equals(BALL)) {
