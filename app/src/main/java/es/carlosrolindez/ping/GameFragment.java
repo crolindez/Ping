@@ -1,6 +1,8 @@
 package es.carlosrolindez.ping;
 
-import android.content.Context;
+import android.app.ActionBar;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,7 +23,7 @@ public class GameFragment extends Fragment {
     private static final String TAG = "GameFragment";
 
     private boolean connectionOwner;
-    private View mContentView = null;
+
     private GameCommManager gameManager = null;
 
     private OnGameFragmentInteractionListener mListener;
@@ -31,13 +33,13 @@ public class GameFragment extends Fragment {
 
     private String message;
 
+    private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+
     // MESSAGE HEADERS
     private final String BALL = "BALL";
     private final String PLAYER = "PLAYER";
     private final String INIT = "INIT";
     private final String GOAL = "GOAL";
-
-    private Handler handler = new Handler();
 
     private PingGameClass pingGame;
 
@@ -55,8 +57,9 @@ public class GameFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        mContentView = inflater.inflate(R.layout.fragment_game, container, false);
-        getActivity().getActionBar().hide();
+        View mContentView = inflater.inflate(R.layout.fragment_game, container, false);
+        ActionBar ab = getActivity().getActionBar();
+        if (ab!=null) ab.hide();
 
         title = (TextView) mContentView.findViewById(R.id.title);
         
@@ -101,29 +104,22 @@ public class GameFragment extends Fragment {
             }
         });
 
+
         if (connectionOwner) {
             player = "Player 1";
-            pingGame.reset();
+
         } else {
             player = "Player 2";
+            Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    message = INIT + pingGame.initMessage();
+                    message = INIT ;
                     gameManager.write(message.getBytes(Charset.defaultCharset()));
+                    new Thread(new GameRunnable(false)).start();
                 }
             }, 500);
-            pingGame.setState(pingGame.PLAYING);
-            final int delay =50;
-            handler.postDelayed(new Runnable(){
-                @Override
-                public void run(){
-                    if (pingGame.getState()==pingGame.PLAYING) {
-                        pingGame.moveBall();
-                        h.postDelayed(this, delay);
-                    }
-                }
-            }, delay);
+
         }
 
 
@@ -137,44 +133,27 @@ public class GameFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnGameFragmentInteractionListener) {
-            mListener = (OnGameFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
 
-    Handler h = new Handler();
-    int delay = 1000; //milliseconds
-
-
     public void pushMessage(String mes) {
         String arg[] = mes.split(" ");
         Log.e(TAG,mes);
-        if ((arg[0].equals(INIT)) && (arg.length == 3)) {
-            pingGame.setState(pingGame.PLAYING);
-            pingGame.setBall(Float.parseFloat(arg[1]),Float.parseFloat(arg[2]));
-            final int delay =50;
-            handler.postDelayed(new Runnable(){
-                @Override
-                public void run(){
-                    if (pingGame.getState()==pingGame.PLAYING) {
-                        pingGame.moveBall();
-                        h.postDelayed(this, delay);
-                    }
-                }
-            }, delay);
-        } else if (arg[0].equals(BALL)) {
+        if (arg[0].equals(INIT)) {
+            new Thread(new GameRunnable(true)).start();
+            message = BALL + pingGame.ballMessage() ;
+            gameManager.write(message.getBytes(Charset.defaultCharset()));
+
+        } else if ((arg[0].equals(BALL)) && (arg.length == 5)){
+            pingGame.setState(PingGameClass.PLAYING);
+            pingGame.setBall(   Float.parseFloat(arg[1]),
+                                Float.parseFloat(arg[2]),
+                                Float.parseFloat(arg[3]),
+                                Float.parseFloat(arg[4]));
+            tg.startTone(ToneGenerator.TONE_DTMF_8,50);
 
         } else if (arg[0].equals(PLAYER)) {
 
@@ -188,5 +167,59 @@ public class GameFragment extends Fragment {
     public interface OnGameFragmentInteractionListener {
         void closeConnection(int code);
 
+    }
+
+    public class GameRunnable implements Runnable {
+
+        boolean owner;
+
+        GameRunnable(boolean owner) {
+            this.owner = owner;
+        }
+
+        public void run() {
+
+
+            final long tbs = (1000 / 10);   // time (in milliseconds) between samples
+            long gameTimer= System.currentTimeMillis();
+
+            try {
+                tg.startTone(ToneGenerator.TONE_DTMF_8,150);
+                Thread.sleep(1000);
+                tg.startTone(ToneGenerator.TONE_DTMF_8,150);
+                Thread.sleep(1000);
+                tg.startTone(ToneGenerator.TONE_DTMF_8,400);
+
+                if (owner) {
+                    pingGame.setState(PingGameClass.PLAYING);
+                    message = BALL + pingGame.ballMessage();
+                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                }
+
+                while (true) {
+                    if (pingGame.getState() == PingGameClass.PLAYING) {
+                        Long timer = System.currentTimeMillis();
+                        if (timer > (gameTimer + tbs)) {
+                            gameTimer = timer;
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (pingGame.moveBall()) {
+                                        tg.startTone(ToneGenerator.TONE_DTMF_8, 50);
+                                        message = BALL + pingGame.ballMessage();
+                                        gameManager.write(message.getBytes(Charset.defaultCharset()));
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    if (pingGame.getState() == PingGameClass.END) {
+                        break;
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

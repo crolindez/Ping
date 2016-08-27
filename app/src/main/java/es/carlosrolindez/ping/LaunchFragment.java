@@ -1,12 +1,12 @@
 package es.carlosrolindez.ping;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,8 +41,8 @@ public class LaunchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
-
-        getActivity().getActionBar().show();
+        ActionBar ab = getActivity().getActionBar();
+        if (ab!=null) ab.show();
 
         // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.
@@ -65,7 +65,7 @@ public class LaunchFragment extends Fragment {
             uiOptions &= (~View.SYSTEM_UI_FLAG_FULLSCREEN);
         }
 
-        if (Build.VERSION.SDK_INT >= 18) {
+        if (Build.VERSION.SDK_INT >= 19) {
             uiOptions &=(~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 

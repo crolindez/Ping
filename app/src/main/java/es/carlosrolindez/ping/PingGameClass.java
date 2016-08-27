@@ -17,71 +17,68 @@ public class PingGameClass {
     public static final int GETTING_READY = 0x10;
     public static final int PLAYING = 0x20;
     public static final int GOAL = 0x30;
+    public static final int END = 0x40;
 
     // PING ENTITIES
-    public static final int PLAYER_LEFT = 0;
-    public static final int PLAYER_RIGHT = 1;
-    public static final int BALL = 2;
-    public static final int TOP_BAR = 3;
-    public static final int BOTTOM_BAR = 4;
+    private static final int PLAYER_LEFT = 0;
+    private static final int PLAYER_RIGHT = 1;
+    private static final int BALL = 2;
+    private static final int TOP_BAR = 3;
+    private static final int BOTTOM_BAR = 4;
 
     // COORDINATES
-    public static final int SIZE_BALL = 5;
-    public static final int WIDTH_PLAYER = 3;
-    public static final int HEIGHT_PLAYER = 25;
-    public static final int WIDTH_BAR = 190;
-    public static final int HEIGHT_BAR = 1;
+    private static final int WINDOWS_X_SIZE = 200;
+    private static final int WINDOWS_Y_SIZE = 100;
+    private static final int SIZE_BALL = 4;
+    private static final int WIDTH_PLAYER = 3;
+    private static final int HEIGHT_PLAYER = 25;
+    private static final int WIDTH_BAR = 190;
+    private static final int HEIGHT_BAR = 1;
 
-    public static final int INIT_X_BALL = 98;
-    public static final int INIT_Y_BALL = 48;
-    public static final int INIT_X_PLAYER_LEFT = 5;
-    public static final int INIT_X_PLAYER_RIGHT = 193;
-    public static final int INIT_Y_OFFSET_PLAYER = -10;
+    private static final int INIT_X_PLAYER_LEFT = 7;
+    private static final int INIT_X_PLAYER_RIGHT = 193;
 
-    public static final int INIT_X_BAR = 5;
-    public static final int INIT_Y_TOP_BAR = 1;
-    public static final int INIT_Y_BOTTOM_BAR = 98;
+    private static final int INIT_Y_TOP_BAR = 0;
+    private static final int INIT_Y_BOTTOM_BAR = 100;
 
-    public static final int MIN_LIMIT_Y_BALL = 2;
-    public static final int MAX_LIMIT_Y_BALL = 93;
+    private static final float MIN_LIMIT_Y_BALL = INIT_Y_TOP_BAR + (SIZE_BALL + HEIGHT_BAR) / 2.0f;
+    private static final float MAX_LIMIT_Y_BALL = INIT_Y_BOTTOM_BAR - (SIZE_BALL + HEIGHT_BAR) / 2.0f;;
 
-    public static final int MIN_LIMIT_X_BALL = 9;
-    public static final int MAX_LIMIT_X_BALL = 188;
+    private static final float MIN_LIMIT_X_BALL = INIT_X_PLAYER_LEFT  + (SIZE_BALL + WIDTH_PLAYER) / 2.0f;
+    private static final float MAX_LIMIT_X_BALL = INIT_X_PLAYER_RIGHT - (SIZE_BALL + WIDTH_PLAYER) / 2.0f;;
 
 
     // Game State
     private int gameState;
 
     // Entities
-    private PlayerClass mPlayerLeft;
-    private PlayerClass mPlayerRight;
-    private BallClass mBall;
-    private BarClass mTopBar;
-    private BarClass mBottomBar;
+    private PositionClass mPlayerLeft;
+    private PositionClass mPlayerRight;
+    private PositionClass mBall;
+    private PositionClass mTopBar;
+    private PositionClass mBottomBar;
 
     // Windows constants
     private static int width, height;
-    private static double xGU, yGU; // game units
-    private static final int XGU = 200;
-    private static final int YGU = 100;
+    private static float xGU, yGU; // game units
 
-    final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+
+    private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
 
     PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar) {
         gameState = START;
 
-        width = XGU; // default values.  Must be updated by UpdateWindowConstanst
-        height = YGU;
-        xGU = 1.0;
-        yGU = 1.0;
+        width = WINDOWS_X_SIZE; // default values.  Must be updated by UpdateWindowConstanst
+        height = WINDOWS_Y_SIZE;
+        xGU = 1.0f;
+        yGU = 1.0f;
 
-        mPlayerLeft = new PlayerClass(playerLeft, PLAYER_LEFT);
-        mPlayerRight = new PlayerClass(playerRight, PLAYER_RIGHT);
-        mBall = new BallClass(ball);
-        mTopBar = new BarClass(topBar, TOP_BAR);
-        mBottomBar = new BarClass(bottomBar, BOTTOM_BAR);
+        mPlayerLeft = new PositionClass(playerLeft, PLAYER_LEFT);
+        mPlayerRight = new PositionClass(playerRight, PLAYER_RIGHT);
+        mBall = new PositionClass(ball, BALL);
+        mTopBar = new PositionClass(topBar, TOP_BAR);
+        mBottomBar = new PositionClass(bottomBar, BOTTOM_BAR);
 
-        tone(ToneGenerator.TONE_PROP_BEEP2);
 
     }
 
@@ -92,40 +89,27 @@ public class PingGameClass {
 
         height = (bottom - top);
         width = right - left;
-        xGU = width / (float)XGU;
-        yGU = height / (float)YGU;
+        xGU = width / (float)WINDOWS_X_SIZE;
+        yGU = height / (float)WINDOWS_Y_SIZE;
 
         mBall.resizeImage((int)(SIZE_BALL*xGU), (int) (SIZE_BALL*yGU));
-        mBall.setPosition();
         mPlayerLeft.resizeImage((int)(WIDTH_PLAYER*xGU), (int) (HEIGHT_PLAYER*yGU));
-        mPlayerLeft.setPosition();
         mPlayerRight.resizeImage((int)(WIDTH_PLAYER*xGU), (int) (HEIGHT_PLAYER*yGU));
-        mPlayerRight.setPosition();
         mTopBar.resizeImage((int)(WIDTH_BAR*xGU), (int) (HEIGHT_BAR*yGU));
-        mTopBar.setPosition();
         mBottomBar.resizeImage((int)(WIDTH_BAR*xGU), (int) (HEIGHT_BAR*yGU));
-        mBottomBar.setPosition();
 
     }
 
     public void setState(int newState) {
 
         gameState = newState;
-        if (gameState == PLAYING)
-            tone(ToneGenerator.TONE_DTMF_8,50);
+ /*       if (gameState == PLAYING)
+            tone(ToneGenerator.TONE_DTMF_8,50);*/
 
     }
 
     public int getState() {
         return gameState;
-    }
-
-    private void tone(int tone,int duration) {
-        tg.startTone(tone, duration);
-    }
-
-    private void tone(int tone) {
-        tg.startTone(tone);
     }
 
     public void reset() {
@@ -134,19 +118,18 @@ public class PingGameClass {
         mPlayerRight.resetPosition();
     }
 
-    public String initMessage() {
-        reset();
-        String message = " " + (-mBall.getXdelta()) + " " + mBall.getYdelta();
-        return message;
+
+    public String ballMessage() {
+        return " "  + (WINDOWS_X_SIZE - mBall.getXPosition()) + " " + mBall.getYPosition() + " " + -mBall.getXdelta() + " " + mBall.getYdelta();
     }
 
-    public void setBall(float xDelta,float yDelta) {
-        mBall.setXdelta(xDelta);
-        mBall.setYdelta(yDelta);
+    public void setBall(float xPosition, float yPosition, float xDelta,float yDelta) {
+        mBall.setPosition(xPosition, yPosition);
+        mBall.setDelta(xDelta, yDelta);
     }
 
 
-    public void moveBall() {
+    public boolean moveBall() { // calculate next ball position and return true if ball bounced on the player
         float nextX,nextY;
         float seqX,seqY;
 
@@ -156,79 +139,140 @@ public class PingGameClass {
         seqY = mBall.nextSequenceYPosition();
         mBall.setPosition(nextX, nextY);
         if ( (nextX != seqX ) || (nextY != seqY) ) {
-            tone(ToneGenerator.TONE_DTMF_8,50);
-            if (nextX != seqX) mBall.bounceX();
+            tg.startTone(ToneGenerator.TONE_DTMF_8,50);
             if (nextY != seqY) mBall.bounceY();
+            if (nextX != seqX) { // bounced on the player
+                mBall.bounceX();
+                return true;
+            }
         }
+        return false;
     }
 
     public class PositionClass {
 
-        private float xPosition, yPosition, xDelta, yDelta;
+        private float xPosition, yPosition, xDelta, yDelta, xSize, ySize;
         private ImageView mView;
+        public int entity;
 
-        PositionClass(ImageView view){
-            xPosition = 1;
-            yPosition = 1;
+        PositionClass(ImageView view, int entity){
+            xPosition = 0;
+            yPosition = 0;
             xDelta = 0;
             yDelta = 0;
+            xSize = 0;
+            ySize = 0;
             mView = view;
+            this.entity = entity;
+
+            resetPosition();
 
         }
 
-        public void resizeImage(int xSize, int ySize) {
-            mView.setLayoutParams(new RelativeLayout.LayoutParams(xSize,ySize));
+        private void resetPosition() {
+            switch (entity) {
+                case PLAYER_LEFT:
+                    xSize = WIDTH_PLAYER;
+                    ySize = HEIGHT_PLAYER;
+                    setPosition(INIT_X_PLAYER_LEFT - WIDTH_PLAYER / 2.0f, WINDOWS_Y_SIZE / 2.0f - HEIGHT_PLAYER / 2.0f );
+                    break;
+                case PLAYER_RIGHT:
+                    xSize = WIDTH_PLAYER;
+                    ySize = HEIGHT_PLAYER;
+                    setPosition(INIT_X_PLAYER_RIGHT - WIDTH_PLAYER / 2.0f, WINDOWS_Y_SIZE / 2.0f - HEIGHT_PLAYER / 2.0f );
+                    break;
+                case TOP_BAR:
+                    xSize = WIDTH_BAR;
+                    ySize = HEIGHT_BAR;
+                    setPosition(WINDOWS_X_SIZE / 2.0f, INIT_Y_TOP_BAR - HEIGHT_BAR  / 2.0f );
+                    break;
+                case BOTTOM_BAR:
+                    xSize = WIDTH_BAR;
+                    ySize = HEIGHT_BAR;
+                    setPosition(WINDOWS_X_SIZE / 2.0f, INIT_Y_BOTTOM_BAR - HEIGHT_BAR  / 2.0f );
+
+                    break;
+                case BALL:
+                    xSize = SIZE_BALL;
+                    ySize = SIZE_BALL;
+                    setPosition(WINDOWS_X_SIZE / 2.0f  - SIZE_BALL / 2.0f, WINDOWS_Y_SIZE / 2.0f  - SIZE_BALL / 2.0f );
+                    setXdelta(2);
+                    if ((Math.random() * 2) > 1) {
+                        setYdelta(0.60f);
+                    } else {
+                        setYdelta(-0.60f);
+                    }
+                default:
+                    break;
+            }
+
+
         }
 
-        public void setPosition(float x, float y) {
+        private float getXPosition() { return xPosition; }
+
+        private float getYPosition() { return yPosition; }
+
+        private void setPosition(float x, float y) {
             xPosition = x;
             yPosition = y;
-            mView.setX((float) (xPosition * xGU));
-            mView.setY((float) (yPosition * yGU));
-
-        }
-        public void setPosition() {
-            mView.setX((float) (xPosition * xGU));
-            mView.setY((float) (yPosition * yGU));
-
+            setImage();
         }
 
         public void setYPosition(float y) {
             yPosition = y;
-            mView.setY((float) (yPosition * yGU));
+            setImage();
         }
 
         public void setXPosition(float x) {
             xPosition = x;
-            mView.setX((float) (xPosition * xGU));
+            setImage();
         }
 
-        public float getXdelta() {
+
+
+        private float getXdelta() {
             return xDelta;
         }
 
-        public float getYdelta() {
+        private float getYdelta() {
             return yDelta;
         }
 
 
-        public void setXdelta(float x) {
+        private void setXdelta(float x) {
             xDelta = x;
         }
 
-        public void setYdelta(float y) {
+        private void setYdelta(float y) {
             yDelta = y;
         }
 
-        public void bounceX() {
+        private void setDelta(float x, float y) {
+            xDelta = x;
+            yDelta = y;
+        }
+
+        private void resizeImage(int xSize, int ySize) {
+            mView.setLayoutParams(new RelativeLayout.LayoutParams(xSize,ySize));
+            setImage();
+        }
+
+        private void setImage() {
+            mView.setX(((xPosition - xSize/2.0f )* xGU));
+            mView.setY(((yPosition - ySize/2.0f) * yGU));
+        }
+
+
+        private void bounceX() {
             xDelta = -xDelta;
         }
 
-        public void bounceY() {
+        private void bounceY() {
             yDelta = -yDelta;
         }
 
-        public float nextBouncingYPosition() {
+        private float nextBouncingYPosition() {
             if (yPosition > MAX_LIMIT_Y_BALL) {             // checks absolute limits
                 return (MAX_LIMIT_Y_BALL - abs(yDelta));
             } else if (yPosition < MIN_LIMIT_Y_BALL) {
@@ -242,87 +286,27 @@ public class PingGameClass {
             }
         }
 
-        public float nextBouncingXPosition() {
-            if (xPosition > MAX_LIMIT_X_BALL) {             // checks absolute limits
+        private float nextBouncingXPosition() {
+            /*if (xPosition > MAX_LIMIT_X_BALL) {             // checks absolute limits
                 return (MAX_LIMIT_X_BALL - abs(xDelta));
-            } else if (xPosition < MIN_LIMIT_X_BALL) {
+            } else */if (xPosition < MIN_LIMIT_X_BALL) {
                 return ( MIN_LIMIT_X_BALL + abs(xDelta));
-            } else if ((xPosition + xDelta) > MAX_LIMIT_X_BALL) {   // checks limits after xDelta
+            } /*else if ((xPosition + xDelta) > MAX_LIMIT_X_BALL) {   // checks limits after xDelta
                 return ( 2 * MAX_LIMIT_X_BALL - xDelta - xPosition);
-            } else if ((xPosition + xDelta) < MIN_LIMIT_X_BALL) {
+            } */else if ((xPosition + xDelta) < MIN_LIMIT_X_BALL) {
                 return ( 2 * MIN_LIMIT_X_BALL - xDelta - xPosition);
             } else {
                 return (xPosition + xDelta);
             }
         }
 
-        public float nextSequenceYPosition() {
+        private float nextSequenceYPosition() {
             return (yPosition + yDelta);
         }
 
-        public float nextSequenceXPosition() {
+        private float nextSequenceXPosition() {
             return (xPosition + xDelta);
         }
-    }
-
-    public class PlayerClass extends PositionClass {
-        public int mPlace;
-
-        PlayerClass(ImageView view,int place) {
-            super(view);
-            mPlace = place;
-            if (mPlace == PLAYER_LEFT) {
-                setXPosition(INIT_X_PLAYER_LEFT);
-            } else  if (mPlace == PLAYER_RIGHT){
-                setXPosition(INIT_X_PLAYER_RIGHT);
-            }
-            else {
-                //// TODO: 21/08/2016
-            }
-            resetPosition();
-        }
-
-        public void resetPosition() {
-            setYPosition((float)(height/2 + INIT_Y_OFFSET_PLAYER*yGU));
-            setYdelta(0);
-        }
-    }
-
-    public class BallClass extends PositionClass {
-        BallClass(ImageView view) {
-            super(view);
-            resetPosition();
-        }
-
-        public void resetPosition() {
-            setPosition(INIT_X_BALL, INIT_Y_BALL);
-            setXdelta(2);
-            if ((Math.random() * 2) > 1) {
-                setYdelta(0.60f);
-            } else {
-                setYdelta(-0.60f);
-            }
-        }
-
-    }
-
-    public class BarClass extends PositionClass {
-        public int mPlace;
-
-        BarClass(ImageView view,int place) {
-            super(view);
-            mPlace = place;
-
-            if (mPlace == TOP_BAR) {
-                setPosition(INIT_X_BAR, INIT_Y_TOP_BAR);
-            } else  if (mPlace == BOTTOM_BAR){
-                setPosition(INIT_X_BAR, INIT_Y_BOTTOM_BAR);
-            }
-            else {
-                //// TODO: 21/08/2016
-            }
-        }
-
     }
 
 }
