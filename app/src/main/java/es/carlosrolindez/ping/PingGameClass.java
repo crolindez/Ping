@@ -38,8 +38,8 @@ public class PingGameClass {
     private static final int INIT_X_PLAYER_LEFT = 7;
     private static final int INIT_X_PLAYER_RIGHT = 193;
 
-    private static final int INIT_Y_TOP_BAR = 0;
-    private static final int INIT_Y_BOTTOM_BAR = 100;
+    private static final int INIT_Y_TOP_BAR = 1;
+    private static final int INIT_Y_BOTTOM_BAR = 99;
 
     private static final float MIN_LIMIT_Y_BALL = INIT_Y_TOP_BAR + (SIZE_BALL + HEIGHT_BAR) / 2.0f;
     private static final float MAX_LIMIT_Y_BALL = INIT_Y_BOTTOM_BAR - (SIZE_BALL + HEIGHT_BAR) / 2.0f;;
@@ -174,28 +174,27 @@ public class PingGameClass {
                 case PLAYER_LEFT:
                     xSize = WIDTH_PLAYER;
                     ySize = HEIGHT_PLAYER;
-                    setPosition(INIT_X_PLAYER_LEFT - WIDTH_PLAYER / 2.0f, WINDOWS_Y_SIZE / 2.0f - HEIGHT_PLAYER / 2.0f );
+                    setPosition(INIT_X_PLAYER_LEFT, WINDOWS_Y_SIZE / 2.0f );
                     break;
                 case PLAYER_RIGHT:
                     xSize = WIDTH_PLAYER;
                     ySize = HEIGHT_PLAYER;
-                    setPosition(INIT_X_PLAYER_RIGHT - WIDTH_PLAYER / 2.0f, WINDOWS_Y_SIZE / 2.0f - HEIGHT_PLAYER / 2.0f );
+                    setPosition(INIT_X_PLAYER_RIGHT, WINDOWS_Y_SIZE / 2.0f );
                     break;
                 case TOP_BAR:
                     xSize = WIDTH_BAR;
                     ySize = HEIGHT_BAR;
-                    setPosition(WINDOWS_X_SIZE / 2.0f, INIT_Y_TOP_BAR - HEIGHT_BAR  / 2.0f );
+                    setPosition(WINDOWS_X_SIZE / 2.0f, INIT_Y_TOP_BAR);
                     break;
                 case BOTTOM_BAR:
                     xSize = WIDTH_BAR;
                     ySize = HEIGHT_BAR;
-                    setPosition(WINDOWS_X_SIZE / 2.0f, INIT_Y_BOTTOM_BAR - HEIGHT_BAR  / 2.0f );
-
+                    setPosition(WINDOWS_X_SIZE / 2.0f, INIT_Y_BOTTOM_BAR);
                     break;
                 case BALL:
                     xSize = SIZE_BALL;
                     ySize = SIZE_BALL;
-                    setPosition(WINDOWS_X_SIZE / 2.0f  - SIZE_BALL / 2.0f, WINDOWS_Y_SIZE / 2.0f  - SIZE_BALL / 2.0f );
+                    setPosition(WINDOWS_X_SIZE / 2.0f , WINDOWS_Y_SIZE / 2.0f);
                     setXdelta(2);
                     if ((Math.random() * 2) > 1) {
                         setYdelta(0.60f);

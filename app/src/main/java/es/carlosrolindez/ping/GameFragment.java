@@ -61,6 +61,8 @@ public class GameFragment extends Fragment {
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.hide();
 
+        mListener = (OnGameFragmentInteractionListener) getActivity();
+
         title = (TextView) mContentView.findViewById(R.id.title);
         
 
@@ -126,15 +128,11 @@ public class GameFragment extends Fragment {
         return mContentView;
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        mListener.closeConnection(0);
-    }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.closeConnection(0);
         mListener = null;
     }
 
@@ -180,7 +178,7 @@ public class GameFragment extends Fragment {
         public void run() {
 
 
-            final long tbs = (1000 / 10);   // time (in milliseconds) between samples
+            final long tbs = (1000 / 15);   // time (in milliseconds) between samples
             long gameTimer= System.currentTimeMillis();
 
             try {
