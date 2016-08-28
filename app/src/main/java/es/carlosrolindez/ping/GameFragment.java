@@ -133,6 +133,7 @@ public class GameFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener.closeConnection(0);
+        pingGame.setState(PingGameClass.END);
         mListener = null;
     }
 
@@ -198,7 +199,7 @@ public class GameFragment extends Fragment {
                     if (pingGame.getState() == PingGameClass.PLAYING) {
                         Long timer = System.currentTimeMillis();
                         if (timer > (gameTimer + tbs)) {
-                            gameTimer = timer;
+                            gameTimer += tbs;
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {

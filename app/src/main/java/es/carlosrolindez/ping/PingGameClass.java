@@ -82,7 +82,7 @@ public class PingGameClass {
 
     }
 
-    public void updateWindowConstants(int top, int bottom, int left, int right  ) {
+    public synchronized void updateWindowConstants(int top, int bottom, int left, int right  ) {
 
         if(height == (bottom - top))
             return;
@@ -100,7 +100,7 @@ public class PingGameClass {
 
     }
 
-    public void setState(int newState) {
+    public synchronized void setState(int newState) {
 
         gameState = newState;
  /*       if (gameState == PLAYING)
@@ -108,7 +108,7 @@ public class PingGameClass {
 
     }
 
-    public int getState() {
+    public synchronized int getState() {
         return gameState;
     }
 
@@ -119,17 +119,17 @@ public class PingGameClass {
     }
 
 
-    public String ballMessage() {
+    public synchronized String ballMessage() {
         return " "  + (WINDOWS_X_SIZE - mBall.getXPosition()) + " " + mBall.getYPosition() + " " + -mBall.getXdelta() + " " + mBall.getYdelta();
     }
 
-    public void setBall(float xPosition, float yPosition, float xDelta,float yDelta) {
+    public synchronized void setBall(float xPosition, float yPosition, float xDelta,float yDelta) {
         mBall.setPosition(xPosition, yPosition);
         mBall.setDelta(xDelta, yDelta);
     }
 
 
-    public boolean moveBall() { // calculate next ball position and return true if ball bounced on the player
+    public synchronized  boolean moveBall() { // calculate next ball position and return true if ball bounced on the player
         float nextX,nextY;
         float seqX,seqY;
 
@@ -149,11 +149,11 @@ public class PingGameClass {
         return false;
     }
 
-    public class PositionClass {
+    private class PositionClass {
 
         private float xPosition, yPosition, xDelta, yDelta, xSize, ySize;
         private ImageView mView;
-        public int entity;
+        private int entity;
 
         PositionClass(ImageView view, int entity){
             xPosition = 0;
@@ -273,13 +273,13 @@ public class PingGameClass {
 
         private float nextBouncingYPosition() {
             if (yPosition > MAX_LIMIT_Y_BALL) {             // checks absolute limits
-                return (MAX_LIMIT_Y_BALL - abs(yDelta));
+                return (MAX_LIMIT_Y_BALL);
             } else if (yPosition < MIN_LIMIT_Y_BALL) {
-                return ( MIN_LIMIT_Y_BALL + abs(yDelta));
+                return (MIN_LIMIT_Y_BALL );
             } else if ((yPosition + yDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
-                return ( 2 * MAX_LIMIT_Y_BALL - yDelta - yPosition);
+                return ( 2 * MAX_LIMIT_Y_BALL - yDelta - yPosition );
             } else if ((yPosition + yDelta) < MIN_LIMIT_Y_BALL) {
-                return ( 2 * MIN_LIMIT_Y_BALL - yDelta - yPosition);
+                return ( 2 * MIN_LIMIT_Y_BALL - yDelta - yPosition );
             } else {
                 return (yPosition + yDelta);
             }
@@ -287,13 +287,13 @@ public class PingGameClass {
 
         private float nextBouncingXPosition() {
             /*if (xPosition > MAX_LIMIT_X_BALL) {             // checks absolute limits
-                return (MAX_LIMIT_X_BALL - abs(xDelta));
+                return (MAX_LIMIT_X_BALL);
             } else */if (xPosition < MIN_LIMIT_X_BALL) {
-                return ( MIN_LIMIT_X_BALL + abs(xDelta));
+                return (MIN_LIMIT_X_BALL);
             } /*else if ((xPosition + xDelta) > MAX_LIMIT_X_BALL) {   // checks limits after xDelta
                 return ( 2 * MAX_LIMIT_X_BALL - xDelta - xPosition);
             } */else if ((xPosition + xDelta) < MIN_LIMIT_X_BALL) {
-                return ( 2 * MIN_LIMIT_X_BALL - xDelta - xPosition);
+                return ( 2 * MIN_LIMIT_X_BALL - xDelta - xPosition );
             } else {
                 return (xPosition + xDelta);
             }

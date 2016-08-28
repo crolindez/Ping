@@ -2,7 +2,6 @@
 package es.carlosrolindez.ping;
 
 import android.os.Handler;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +20,6 @@ public class GameCommManager implements Runnable {
     public GameCommManager(Socket socket, Handler handler) {
         this.socket = socket;
         this.handler = handler;
-        Log.e(TAG, "GameCommManager created");
     }
 
     private InputStream iStream;
@@ -49,11 +47,9 @@ public class GameCommManager implements Runnable {
                     }
 
                     // Send the obtained bytes to the UI Activity
-                    Log.e(TAG, "Rec:" + String.valueOf(buffer));
                     handler.obtainMessage(PingActivity.MESSAGE,
                             bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
-                    Log.e(TAG, "disconnected", e);
                 }
             }
         } catch (IOException e) {
@@ -71,7 +67,6 @@ public class GameCommManager implements Runnable {
         try {
             oStream.write(buffer);
         } catch (IOException e) {
-            Log.e(TAG, "Exception during write", e);
         }
     }
 
