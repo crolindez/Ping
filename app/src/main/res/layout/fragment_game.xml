@@ -18,12 +18,14 @@
 
 
             <ImageButton
+                android:id="@+id/button_up"
                 android:src="@mipmap/ic_launcher"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
             <ImageButton
+                android:id="@+id/button_down"
                 android:src="@mipmap/ic_launcher"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"

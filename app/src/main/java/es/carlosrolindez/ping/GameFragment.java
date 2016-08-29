@@ -9,8 +9,10 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,7 +43,14 @@ public class GameFragment extends Fragment {
     private final String INIT = "INIT";
     private final String GOAL = "GOAL";
 
+    private final int FPS = 15;
+
     private PingGameClass pingGame;
+
+    private Handler handlerUp = null;
+    private Handler handlerDown = null;
+    private Runnable actionUp;
+    private Runnable actionDown;
 
     public GameFragment() {
         connectionOwner = false;
@@ -91,6 +100,8 @@ public class GameFragment extends Fragment {
         ImageView playerRight = (ImageView) mContentView.findViewById(R.id.player2);
         ImageView topbar = (ImageView) mContentView.findViewById(R.id.topbar);
         ImageView bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
+        ImageButton buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
+        ImageButton buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
 
         pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar);
 
@@ -122,9 +133,83 @@ public class GameFragment extends Fragment {
                 }
             }, 500);
 
+
+
         }
 
+        actionUp = new Runnable() {
+            @Override
+            public void run() {
+                if (pingGame.movePlayerUp()) {
+                    message = PLAYER + pingGame.playerMessage();
+                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                }
+                if (handlerUp!=null)
+                    handlerUp.postDelayed(this,1000/FPS);
+            }
+        };
 
+        actionDown = new Runnable() {
+            @Override
+            public void run() {
+                if (pingGame.movePlayerDown()) {
+                    message = PLAYER + pingGame.playerMessage();
+                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                }
+                if (handlerDown!=null)
+                    handlerDown.postDelayed(this,1000/FPS);
+                handlerDown.postDelayed(this,1000/FPS);
+            }
+        };
+
+        buttonUp.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if (handlerDown!=null) {
+                            handlerDown.removeCallbacks(actionDown);
+                        }
+                        if (handlerUp != null) return true;
+                        handlerUp = new Handler();
+                        handlerUp.postDelayed(actionUp,1000/FPS);
+                        return true;
+                    case MotionEvent.ACTION_DOWN:
+                        if (handlerUp == null) return true;
+                        handlerUp.removeCallbacks(actionUp);
+                        handlerUp = null;
+                        return true;
+                }
+                return false;
+            }
+
+
+        });
+
+        buttonDown.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        if (handlerUp!=null) {
+                            handlerUp.removeCallbacks(actionUp);
+                        }
+                        if (handlerDown != null) return true;
+                        handlerDown = new Handler();
+                        handlerDown.postDelayed(actionUp,1000/FPS);
+                        return true;
+                    case MotionEvent.ACTION_DOWN:
+                        if (handlerDown == null) return true;
+                        handlerDown.removeCallbacks(actionDown);
+                        handlerDown = null;
+                        return true;
+                }
+                return false;
+            }
+
+
+
+        });
         return mContentView;
     }
 
@@ -154,7 +239,8 @@ public class GameFragment extends Fragment {
                                 Float.parseFloat(arg[4]));
             tg.startTone(ToneGenerator.TONE_DTMF_8,50);
 
-        } else if (arg[0].equals(PLAYER)) {
+        } else if ((arg[0].equals(PLAYER)) && (arg.length == 2)){
+            pingGame.setPlayerRight( Float.parseFloat(arg[1]));
 
         } else if (arg[0].equals(GOAL)) {
 
@@ -179,7 +265,7 @@ public class GameFragment extends Fragment {
         public void run() {
 
 
-            final long tbs = (1000 / 15);   // time (in milliseconds) between samples
+            final long tbs = (1000 / FPS);   // time (in milliseconds) between samples
             long gameTimer= System.currentTimeMillis();
 
             try {

@@ -5,8 +5,6 @@ import android.media.ToneGenerator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import static java.lang.Math.abs;
-
 
 
 public class PingGameClass {
@@ -18,6 +16,9 @@ public class PingGameClass {
     public static final int PLAYING = 0x20;
     public static final int GOAL = 0x30;
     public static final int END = 0x40;
+
+    private static final int BALL_GPF = 2;
+    private static final int PLAYER_GPF = 2;
 
     // PING ENTITIES
     private static final int PLAYER_LEFT = 0;
@@ -47,6 +48,8 @@ public class PingGameClass {
     private static final float MIN_LIMIT_X_BALL = INIT_X_PLAYER_LEFT  + (SIZE_BALL + WIDTH_PLAYER) / 2.0f;
     private static final float MAX_LIMIT_X_BALL = INIT_X_PLAYER_RIGHT - (SIZE_BALL + WIDTH_PLAYER) / 2.0f;;
 
+    private static final float MIN_LIMIT_Y_PLAYER = INIT_Y_TOP_BAR + (HEIGHT_PLAYER + HEIGHT_BAR) / 2.0f;
+    private static final float MAX_LIMIT_Y_PLAYER = INIT_Y_BOTTOM_BAR - (HEIGHT_PLAYER + HEIGHT_BAR) / 2.0f;
 
     // Game State
     private int gameState;
@@ -62,6 +65,7 @@ public class PingGameClass {
     private static int width, height;
     private static float xGU, yGU; // game units
 
+    private String message;
 
     private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
 
@@ -123,11 +127,18 @@ public class PingGameClass {
         return " "  + (WINDOWS_X_SIZE - mBall.getXPosition()) + " " + mBall.getYPosition() + " " + -mBall.getXdelta() + " " + mBall.getYdelta();
     }
 
+    public synchronized String playerMessage() {
+        return " "  + mPlayerLeft.getYPosition();
+    }
+
     public synchronized void setBall(float xPosition, float yPosition, float xDelta,float yDelta) {
         mBall.setPosition(xPosition, yPosition);
         mBall.setDelta(xDelta, yDelta);
     }
 
+    public synchronized void setPlayerRight(float yPosition) {
+        mPlayerRight.setYPosition(yPosition);
+    }
 
     public synchronized  boolean moveBall() { // calculate next ball position and return true if ball bounced on the player
         float nextX,nextY;
@@ -147,6 +158,26 @@ public class PingGameClass {
             }
         }
         return false;
+    }
+
+
+    public synchronized  boolean movePlayerUp() {
+        if (mPlayerLeft.getYPosition() == MIN_LIMIT_Y_PLAYER) return false;
+        if ((mPlayerLeft.getYPosition() - PLAYER_GPF) > MIN_LIMIT_Y_PLAYER)
+            mPlayerLeft.setYPosition(mPlayerLeft.getYPosition() - PLAYER_GPF);
+        else
+            mPlayerLeft.setYPosition(MIN_LIMIT_Y_PLAYER);
+        return true;
+
+    }
+
+    public synchronized  boolean movePlayerDown() {
+        if (mPlayerLeft.getYPosition() == MAX_LIMIT_Y_PLAYER) return false;
+        if ((mPlayerLeft.getYPosition() + PLAYER_GPF) < MAX_LIMIT_Y_PLAYER)
+            mPlayerLeft.setYPosition(mPlayerLeft.getYPosition() + PLAYER_GPF);
+        else
+            mPlayerLeft.setYPosition(MAX_LIMIT_Y_PLAYER);
+        return true;
     }
 
     private class PositionClass {
@@ -195,7 +226,7 @@ public class PingGameClass {
                     xSize = SIZE_BALL;
                     ySize = SIZE_BALL;
                     setPosition(WINDOWS_X_SIZE / 2.0f , WINDOWS_Y_SIZE / 2.0f);
-                    setXdelta(2);
+                    setXdelta(BALL_GPF);
                     if ((Math.random() * 2) > 1) {
                         setYdelta(0.60f);
                     } else {
