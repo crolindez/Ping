@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 
 import java.net.InetAddress;
 
@@ -89,7 +88,6 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
-                Log.d(TAG, readMessage);
                 gameFragment.pushMessage(readMessage);
                 break;
 
@@ -146,13 +144,11 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
 
         if (ownership) {
-            Log.e(TAG, "Connected as group owner");
             addMessage("Group Formed.  I am the owner");
             thread = new GroupOwnerSocketHandler(handler);
             thread.start();
 
         } else {
-            Log.e(TAG, "Connected as peer");
             addMessage("Group Formed.  I am NOT the owner");
             thread = new ClientSocketHandler(handler, info.groupOwnerAddress);
             thread.start();

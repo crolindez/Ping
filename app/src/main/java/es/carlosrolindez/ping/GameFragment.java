@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -158,7 +157,6 @@ public class GameFragment extends Fragment {
                 }
                 if (handlerDown!=null)
                     handlerDown.postDelayed(this,1000/FPS);
-                handlerDown.postDelayed(this,1000/FPS);
             }
         };
 
@@ -166,15 +164,12 @@ public class GameFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_UP:
-                        if (handlerDown!=null) {
-                            handlerDown.removeCallbacks(actionDown);
-                        }
+                    case MotionEvent.ACTION_DOWN:
                         if (handlerUp != null) return true;
                         handlerUp = new Handler();
                         handlerUp.postDelayed(actionUp,1000/FPS);
                         return true;
-                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_UP:
                         if (handlerUp == null) return true;
                         handlerUp.removeCallbacks(actionUp);
                         handlerUp = null;
@@ -190,15 +185,12 @@ public class GameFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_UP:
-                        if (handlerUp!=null) {
-                            handlerUp.removeCallbacks(actionUp);
-                        }
+                    case MotionEvent.ACTION_DOWN:
                         if (handlerDown != null) return true;
                         handlerDown = new Handler();
-                        handlerDown.postDelayed(actionUp,1000/FPS);
+                        handlerDown.postDelayed(actionDown,1000/FPS);
                         return true;
-                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_UP:
                         if (handlerDown == null) return true;
                         handlerDown.removeCallbacks(actionDown);
                         handlerDown = null;
@@ -225,7 +217,6 @@ public class GameFragment extends Fragment {
 
     public void pushMessage(String mes) {
         String arg[] = mes.split(" ");
-        Log.e(TAG,mes);
         if (arg[0].equals(INIT)) {
             new Thread(new GameRunnable(true)).start();
             message = BALL + pingGame.ballMessage() ;
