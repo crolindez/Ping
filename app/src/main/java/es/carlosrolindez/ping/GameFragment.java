@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,9 +29,6 @@ public class GameFragment extends Fragment {
     private GameCommManager gameManager = null;
 
     private OnGameFragmentInteractionListener mListener;
-
-    private TextView leftScoreText;
-    private TextView rightScoreText;
 
     private String message;
 
@@ -71,10 +69,6 @@ public class GameFragment extends Fragment {
 
         mListener = (OnGameFragmentInteractionListener) getActivity();
 
-        leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
-        rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
-
-
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
 
         // Navigation bar hiding:  Backwards compatible to ICS.
@@ -100,6 +94,8 @@ public class GameFragment extends Fragment {
         ImageView bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
         ImageButton buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
         ImageButton buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
+        TextView leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
+        TextView rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
 
         pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
 
@@ -116,9 +112,7 @@ public class GameFragment extends Fragment {
         });
 
 
-        if (connectionOwner) {
-
-        } else {
+        if (!connectionOwner) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -128,9 +122,6 @@ public class GameFragment extends Fragment {
                     new Thread(new GameRunnable(false)).start();
                 }
             }, 500);
-
-
-
         }
 
         actionUp = new Runnable() {
@@ -220,6 +211,7 @@ public class GameFragment extends Fragment {
                 new Thread(new GameRunnable(true)).start();
                 message = BALL + pingGame.ballMessage() ;
                 gameManager.write(message.getBytes(Charset.defaultCharset()));
+                pingGame.setState(PingGameClass.PLAYING);
                 index ++;
 
             } else if ((arg[index].equals(BALL)) && ((arg.length-index)>=5 ) ){
@@ -268,6 +260,7 @@ public class GameFragment extends Fragment {
 
 
             try {
+                Log.e(TAG+" "+System.currentTimeMillis(),"Start");
                 tg.startTone(ToneGenerator.TONE_DTMF_8,150);
                 Thread.sleep(1000);
                 tg.startTone(ToneGenerator.TONE_DTMF_8,150);
@@ -275,6 +268,7 @@ public class GameFragment extends Fragment {
                 tg.startTone(ToneGenerator.TONE_DTMF_8,400);
 
                 if (owner) {
+                    Log.e(TAG+" "+System.currentTimeMillis(),"Owner - set Playing - Sent BALL message");
                     pingGame.setState(PingGameClass.PLAYING);
                     message = BALL + pingGame.ballMessage();
                     gameManager.write(message.getBytes(Charset.defaultCharset()));
@@ -290,12 +284,15 @@ public class GameFragment extends Fragment {
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.e(TAG+" "+System.currentTimeMillis(),"Playing - move Ball");
                                     int event = pingGame.moveBall();
                                     if (event == PingGameClass.BOUNCE_MOVEMENT) {
+                                        Log.e(TAG+" "+System.currentTimeMillis(),"Playing - Bounce");
                                         tg.startTone(ToneGenerator.TONE_DTMF_8, 50);
                                         message = BALL + pingGame.ballMessage();
                                         gameManager.write(message.getBytes(Charset.defaultCharset()));
                                     } else if (event == PingGameClass.GOAL_MOVEMENT) {
+                                        Log.e(TAG+" "+System.currentTimeMillis(),"Playing - Goal");
                                         tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
                                         message = GOAL + " ";
                                         gameManager.write(message.getBytes(Charset.defaultCharset()));
@@ -310,10 +307,11 @@ public class GameFragment extends Fragment {
                                     }
                                 }
                             });
-                        } else {
-                            gameTimer= System.currentTimeMillis();
                         }
+                    } else {
+                        gameTimer= System.currentTimeMillis();
                     }
+
                     if (pingGame.getState() == PingGameClass.END) {
                         break;
                     }

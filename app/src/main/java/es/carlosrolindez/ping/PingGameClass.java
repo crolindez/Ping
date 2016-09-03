@@ -1,10 +1,10 @@
 package es.carlosrolindez.ping;
 
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.Locale;
 
 
 public class PingGameClass {
@@ -100,9 +100,9 @@ public class PingGameClass {
     }
 
 
-    public synchronized void updateScore() {
-        mLeftScoreText.setText("" + leftScore);
-        mRightScoreText.setText("" + rightScore);
+    private synchronized void updateScore() {
+        mLeftScoreText.setText(String.format(Locale.US, "%d",leftScore));
+        mRightScoreText.setText(String.format(Locale.US, "%d",rightScore));
     }
 
     public synchronized void leftGoal() {
@@ -292,8 +292,7 @@ public class PingGameClass {
         }
 
         private void setNextPosition() {
-            xPosition = nextX;
-            yPosition = nextY;
+            setPosition(nextX,nextY);
         }
 
         private float getXdelta() {
@@ -364,6 +363,7 @@ public class PingGameClass {
                     return GOAL_MOVEMENT;
                 }
                 nextX = 2 * MIN_LIMIT_X_BALL - xDelta - xPosition;
+                xDelta = -xDelta;
                 return BOUNCE_MOVEMENT;
             } else {
                 nextX = xPosition + xDelta;

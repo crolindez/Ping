@@ -55,7 +55,7 @@
                 android:id="@+id/leftScore"
                 android:layout_centerVertical="true"
                 android:layout_toLeftOf="@+id/colon"
-                android:layout_margin="20dp" />
+                android:layout_margin="20dp"/>
 
             <TextView
                 android:text="06"
