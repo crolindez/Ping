@@ -29,8 +29,8 @@ public class GameFragment extends Fragment {
 
     private OnGameFragmentInteractionListener mListener;
 
-    private TextView title;
-    private String player;
+    private TextView leftScoreText;
+    private TextView rightScoreText;
 
     private String message;
 
@@ -71,10 +71,9 @@ public class GameFragment extends Fragment {
 
         mListener = (OnGameFragmentInteractionListener) getActivity();
 
-        title = (TextView) mContentView.findViewById(R.id.title);
-        
+        leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
+        rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
 
-        title.setText(player);
 
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
 
@@ -102,7 +101,7 @@ public class GameFragment extends Fragment {
         ImageButton buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
         ImageButton buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
 
-        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar);
+        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
 
 
         RelativeLayout window = (RelativeLayout) mContentView.findViewById(R.id.game_zone);
@@ -118,10 +117,8 @@ public class GameFragment extends Fragment {
 
 
         if (connectionOwner) {
-            player = "Player 1";
 
         } else {
-            player = "Player 2";
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -217,26 +214,36 @@ public class GameFragment extends Fragment {
 
     public void pushMessage(String mes) {
         String arg[] = mes.split(" ");
-        if (arg[0].equals(INIT)) {
-            new Thread(new GameRunnable(true)).start();
-            message = BALL + pingGame.ballMessage() ;
-            gameManager.write(message.getBytes(Charset.defaultCharset()));
+        int index = 0;
+        while (index < arg.length) {
+            if (arg[index].equals(INIT)) {
+                new Thread(new GameRunnable(true)).start();
+                message = BALL + pingGame.ballMessage() ;
+                gameManager.write(message.getBytes(Charset.defaultCharset()));
+                index ++;
 
-        } else if ((arg[0].equals(BALL)) && (arg.length == 5)){
-            pingGame.setState(PingGameClass.PLAYING);
-            pingGame.setBall(   Float.parseFloat(arg[1]),
-                                Float.parseFloat(arg[2]),
-                                Float.parseFloat(arg[3]),
-                                Float.parseFloat(arg[4]));
-            tg.startTone(ToneGenerator.TONE_DTMF_8,50);
+            } else if ((arg[index].equals(BALL)) && ((arg.length-index)>=5 ) ){
+                pingGame.setState(PingGameClass.PLAYING);
+                pingGame.setBall(   Float.parseFloat(arg[index+1]),
+                                    Float.parseFloat(arg[index+2]),
+                                    Float.parseFloat(arg[index+3]),
+                                    Float.parseFloat(arg[index+4]) );
+                tg.startTone(ToneGenerator.TONE_DTMF_8,50);
+                index +=5;
 
-        } else if ((arg[0].equals(PLAYER)) && (arg.length == 2)){
-            pingGame.setPlayerRight( Float.parseFloat(arg[1]));
+            } else if ((arg[index].equals(PLAYER)) && ((arg.length-index)>=2 )) {
+                pingGame.setPlayerRight( Float.parseFloat(arg[index+1]));
+                index +=2;
+            } else if (arg[index].equals(GOAL))  {
+                pingGame.rightGoal();
+                pingGame.reset();
+                tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
+                pingGame.setState(PingGameClass.GOAL);
+                index ++;
+            } else {
+                index++; //rubbish
+            }
 
-        } else if (arg[0].equals(GOAL)) {
-
-        } else {
-            //// TODO: 21/08/2016
         }
     }
 
@@ -248,6 +255,7 @@ public class GameFragment extends Fragment {
     public class GameRunnable implements Runnable {
 
         boolean owner;
+        long gameTimer;
 
         GameRunnable(boolean owner) {
             this.owner = owner;
@@ -257,7 +265,7 @@ public class GameFragment extends Fragment {
 
 
             final long tbs = (1000 / FPS);   // time (in milliseconds) between samples
-            long gameTimer= System.currentTimeMillis();
+
 
             try {
                 tg.startTone(ToneGenerator.TONE_DTMF_8,150);
@@ -272,6 +280,8 @@ public class GameFragment extends Fragment {
                     gameManager.write(message.getBytes(Charset.defaultCharset()));
                 }
 
+                gameTimer= System.currentTimeMillis();
+
                 while (true) {
                     if (pingGame.getState() == PingGameClass.PLAYING) {
                         Long timer = System.currentTimeMillis();
@@ -280,13 +290,28 @@ public class GameFragment extends Fragment {
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (pingGame.moveBall()) {
+                                    int event = pingGame.moveBall();
+                                    if (event == PingGameClass.BOUNCE_MOVEMENT) {
                                         tg.startTone(ToneGenerator.TONE_DTMF_8, 50);
                                         message = BALL + pingGame.ballMessage();
                                         gameManager.write(message.getBytes(Charset.defaultCharset()));
+                                    } else if (event == PingGameClass.GOAL_MOVEMENT) {
+                                        tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
+                                        message = GOAL + " ";
+                                        gameManager.write(message.getBytes(Charset.defaultCharset()));
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        message = BALL + pingGame.ballMessage();
+                                        gameManager.write(message.getBytes(Charset.defaultCharset()));
+                                        gameTimer= System.currentTimeMillis();
                                     }
                                 }
                             });
+                        } else {
+                            gameTimer= System.currentTimeMillis();
                         }
                     }
                     if (pingGame.getState() == PingGameClass.END) {

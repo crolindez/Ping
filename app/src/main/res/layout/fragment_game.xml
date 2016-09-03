@@ -39,14 +39,32 @@
             android:id="@+id/game_zone"
             android:weightSum="1">
 
+
             <TextView
-                android:text="TextView"
+                android:text=":"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/title"
-                android:layout_alignParentTop="true"
+                android:id="@+id/colon"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="46dp" />
+                android:layout_centerVertical="true" />
+
+            <TextView
+                android:text="04"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/leftScore"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/colon"
+                android:layout_margin="20dp" />
+
+            <TextView
+                android:text="06"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/rightScore"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/colon"
+                android:layout_margin="20dp" />
 
 
             <ImageView

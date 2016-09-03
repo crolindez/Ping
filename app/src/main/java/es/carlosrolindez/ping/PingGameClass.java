@@ -4,7 +4,7 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
+import android.widget.TextView;
 
 
 public class PingGameClass {
@@ -26,6 +26,11 @@ public class PingGameClass {
     private static final int BALL = 2;
     private static final int TOP_BAR = 3;
     private static final int BOTTOM_BAR = 4;
+
+    // PING MOVE RESULTS
+    public static final int GOAL_MOVEMENT = 1;
+    public static final int BOUNCE_MOVEMENT = 2;
+    public static final int OK_MOVEMENT = 0;
 
     // COORDINATES
     private static final int WINDOWS_X_SIZE = 200;
@@ -54,6 +59,8 @@ public class PingGameClass {
     // Game State
     private int gameState;
 
+    private int leftScore, rightScore;
+
     // Entities
     private PositionClass mPlayerLeft;
     private PositionClass mPlayerRight;
@@ -61,15 +68,15 @@ public class PingGameClass {
     private PositionClass mTopBar;
     private PositionClass mBottomBar;
 
+    private TextView mLeftScoreText;
+    private TextView mRightScoreText;
+
     // Windows constants
     private static int width, height;
     private static float xGU, yGU; // game units
 
-    private String message;
 
-    private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
-
-    PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar) {
+    PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar, TextView leftScoreText,TextView rightScoreText) {
         gameState = START;
 
         width = WINDOWS_X_SIZE; // default values.  Must be updated by UpdateWindowConstanst
@@ -82,13 +89,36 @@ public class PingGameClass {
         mBall = new PositionClass(ball, BALL);
         mTopBar = new PositionClass(topBar, TOP_BAR);
         mBottomBar = new PositionClass(bottomBar, BOTTOM_BAR);
+        mLeftScoreText = leftScoreText;
+        mRightScoreText = rightScoreText;
+
+        leftScore = 0;
+        rightScore = 0;
+        updateScore();
 
 
     }
 
+
+    public synchronized void updateScore() {
+        mLeftScoreText.setText("" + leftScore);
+        mRightScoreText.setText("" + rightScore);
+    }
+
+    public synchronized void leftGoal() {
+        leftScore++;
+        updateScore();
+    }
+
+    public synchronized void rightGoal() {
+        rightScore++;
+        updateScore();
+    }
+
+
     public synchronized void updateWindowConstants(int top, int bottom, int left, int right  ) {
 
-        if(height == (bottom - top))
+        if ((height == (bottom - top)) && (width == (right - left)))
             return;
 
         height = (bottom - top);
@@ -124,11 +154,11 @@ public class PingGameClass {
 
 
     public synchronized String ballMessage() {
-        return " "  + (WINDOWS_X_SIZE - mBall.getXPosition()) + " " + mBall.getYPosition() + " " + -mBall.getXdelta() + " " + mBall.getYdelta();
+        return " "  + (WINDOWS_X_SIZE - mBall.getXPosition()) + " " + mBall.getYPosition() + " " + -mBall.getXdelta() + " " + mBall.getYdelta() + " " ;
     }
 
     public synchronized String playerMessage() {
-        return " "  + mPlayerLeft.getYPosition();
+        return " "  + mPlayerLeft.getYPosition() + " " ;
     }
 
     public synchronized void setBall(float xPosition, float yPosition, float xDelta,float yDelta) {
@@ -140,24 +170,25 @@ public class PingGameClass {
         mPlayerRight.setYPosition(yPosition);
     }
 
-    public synchronized  boolean moveBall() { // calculate next ball position and return true if ball bounced on the player
-        float nextX,nextY;
-        float seqX,seqY;
+    public synchronized  int moveBall() { // calculate next ball position and return true if ball bounced on the player
 
-        nextX = mBall.nextBouncingXPosition();
-        seqX = mBall.nextSequenceXPosition();
-        nextY = mBall.nextBouncingYPosition();
-        seqY = mBall.nextSequenceYPosition();
-        mBall.setPosition(nextX, nextY);
-        if ( (nextX != seqX ) || (nextY != seqY) ) {
-            tg.startTone(ToneGenerator.TONE_DTMF_8,50);
-            if (nextY != seqY) mBall.bounceY();
-            if (nextX != seqX) { // bounced on the player
-                mBall.bounceX();
-                return true;
+
+        int result1 = mBall.nextYPosition();
+        int result2 = mBall.nextXPosition(mPlayerLeft.getYPosition());
+
+
+        if (result2 == GOAL_MOVEMENT) {
+            leftGoal();
+            reset();
+            return result2;
+        } else {
+            mBall.setNextPosition();
+            if ( (result1==BOUNCE_MOVEMENT) || (result2==BOUNCE_MOVEMENT) ) {
+                return BOUNCE_MOVEMENT;
             }
+            return OK_MOVEMENT;
         }
-        return false;
+
     }
 
 
@@ -185,6 +216,7 @@ public class PingGameClass {
         private float xPosition, yPosition, xDelta, yDelta, xSize, ySize;
         private ImageView mView;
         private int entity;
+        private float nextX, nextY;
 
         PositionClass(ImageView view, int entity){
             xPosition = 0;
@@ -249,17 +281,20 @@ public class PingGameClass {
             setImage();
         }
 
-        public void setYPosition(float y) {
+        private void setYPosition(float y) {
             yPosition = y;
             setImage();
         }
 
-        public void setXPosition(float x) {
+        private void setXPosition(float x) {
             xPosition = x;
             setImage();
         }
 
-
+        private void setNextPosition() {
+            xPosition = nextX;
+            yPosition = nextY;
+        }
 
         private float getXdelta() {
             return xDelta;
@@ -294,49 +329,48 @@ public class PingGameClass {
         }
 
 
-        private void bounceX() {
-            xDelta = -xDelta;
-        }
-
-        private void bounceY() {
-            yDelta = -yDelta;
-        }
-
-        private float nextBouncingYPosition() {
-            if (yPosition > MAX_LIMIT_Y_BALL) {             // checks absolute limits
-                return (MAX_LIMIT_Y_BALL);
-            } else if (yPosition < MIN_LIMIT_Y_BALL) {
-                return (MIN_LIMIT_Y_BALL );
-            } else if ((yPosition + yDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
-                return ( 2 * MAX_LIMIT_Y_BALL - yDelta - yPosition );
+        private int nextYPosition() {
+            if ((yPosition + yDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
+                nextY =  2 * MAX_LIMIT_Y_BALL - yDelta - yPosition;
+                yDelta = -yDelta;
+                return BOUNCE_MOVEMENT;
             } else if ((yPosition + yDelta) < MIN_LIMIT_Y_BALL) {
-                return ( 2 * MIN_LIMIT_Y_BALL - yDelta - yPosition );
+                nextY = 2 * MIN_LIMIT_Y_BALL - yDelta - yPosition;
+                yDelta = -yDelta;
+                return BOUNCE_MOVEMENT;
             } else {
-                return (yPosition + yDelta);
+                nextY = yPosition + yDelta;
+                return OK_MOVEMENT;
             }
         }
 
-        private float nextBouncingXPosition() {
-            /*if (xPosition > MAX_LIMIT_X_BALL) {             // checks absolute limits
-                return (MAX_LIMIT_X_BALL);
-            } else */if (xPosition < MIN_LIMIT_X_BALL) {
-                return (MIN_LIMIT_X_BALL);
-            } /*else if ((xPosition + xDelta) > MAX_LIMIT_X_BALL) {   // checks limits after xDelta
-                return ( 2 * MAX_LIMIT_X_BALL - xDelta - xPosition);
-            } */else if ((xPosition + xDelta) < MIN_LIMIT_X_BALL) {
-                return ( 2 * MIN_LIMIT_X_BALL - xDelta - xPosition );
+        private int nextXPosition(float playerYposition) {
+            if (xPosition < MIN_LIMIT_X_BALL) {
+                nextX = xPosition + xDelta;
+                return GOAL_MOVEMENT;
+            } else if ((xPosition + xDelta) < MIN_LIMIT_X_BALL) {
+                if ((playerYposition-(HEIGHT_PLAYER/2)-(SIZE_BALL/2)) >= yPosition) {
+                    nextX = xPosition + xDelta;
+                    return GOAL_MOVEMENT;
+                } else if ((playerYposition-(HEIGHT_PLAYER/4)-(SIZE_BALL/2)) >= yPosition)  { // Up area
+                    if (yDelta > 0) { yDelta/=2; }
+                    else            { yDelta*=2; }
+                } else if ((playerYposition+(HEIGHT_PLAYER/4)+(SIZE_BALL/2)) > yPosition) { // Middle area
+                } else if ((playerYposition+(HEIGHT_PLAYER/2)+(SIZE_BALL/2)) > yPosition) { // Lower area
+                    if (yDelta > 0) yDelta*=2;
+                    else yDelta/=2;
+                } else {
+                    nextX = xPosition + xDelta;
+                    return GOAL_MOVEMENT;
+                }
+                nextX = 2 * MIN_LIMIT_X_BALL - xDelta - xPosition;
+                return BOUNCE_MOVEMENT;
             } else {
-                return (xPosition + xDelta);
+                nextX = xPosition + xDelta;
+                return OK_MOVEMENT;
             }
         }
 
-        private float nextSequenceYPosition() {
-            return (yPosition + yDelta);
-        }
-
-        private float nextSequenceXPosition() {
-            return (xPosition + xDelta);
-        }
     }
 
 }
