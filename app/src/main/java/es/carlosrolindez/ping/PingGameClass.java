@@ -28,9 +28,10 @@ public class PingGameClass {
     private static final int BOTTOM_BAR = 4;
 
     // PING MOVE RESULTS
-    public static final int GOAL_MOVEMENT = 1;
-    public static final int BOUNCE_MOVEMENT = 2;
-    public static final int OK_MOVEMENT = 0;
+    static final int GOAL_MOVEMENT = 3;
+    static final int BOUNCE_PLAYER = 2;
+    static final int BOUNCE_WALL =   1;
+    static final int OK_MOVEMENT =   0;
 
     // COORDINATES
     private static final int WINDOWS_X_SIZE = 200;
@@ -137,8 +138,6 @@ public class PingGameClass {
     public synchronized void setState(int newState) {
 
         gameState = newState;
- /*       if (gameState == PLAYING)
-            tone(ToneGenerator.TONE_DTMF_8,50);*/
 
     }
 
@@ -172,21 +171,19 @@ public class PingGameClass {
 
     public synchronized  int moveBall() { // calculate next ball position and return true if ball bounced on the player
 
-
         int result1 = mBall.nextYPosition();
         int result2 = mBall.nextXPosition(mPlayerLeft.getYPosition());
 
 
+
         if (result2 == GOAL_MOVEMENT) {
-            leftGoal();
+            rightGoal();
             reset();
             return result2;
         } else {
             mBall.setNextPosition();
-            if ( (result1==BOUNCE_MOVEMENT) || (result2==BOUNCE_MOVEMENT) ) {
-                return BOUNCE_MOVEMENT;
-            }
-            return OK_MOVEMENT;
+            if (result2 == BOUNCE_PLAYER) return result2;
+            return result1;
         }
 
     }
@@ -332,11 +329,11 @@ public class PingGameClass {
             if ((yPosition + yDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
                 nextY =  2 * MAX_LIMIT_Y_BALL - yDelta - yPosition;
                 yDelta = -yDelta;
-                return BOUNCE_MOVEMENT;
+                return BOUNCE_WALL;
             } else if ((yPosition + yDelta) < MIN_LIMIT_Y_BALL) {
                 nextY = 2 * MIN_LIMIT_Y_BALL - yDelta - yPosition;
                 yDelta = -yDelta;
-                return BOUNCE_MOVEMENT;
+                return BOUNCE_WALL;
             } else {
                 nextY = yPosition + yDelta;
                 return OK_MOVEMENT;
@@ -352,19 +349,31 @@ public class PingGameClass {
                     nextX = xPosition + xDelta;
                     return GOAL_MOVEMENT;
                 } else if ((playerYposition-(HEIGHT_PLAYER/4)-(SIZE_BALL/2)) >= yPosition)  { // Up area
-                    if (yDelta > 0) { yDelta/=2; }
-                    else            { yDelta*=2; }
+                    if (yDelta > 0) {
+                        yDelta /= 2;
+                    }
+                    else {
+                        yDelta *= 2;
+                        if (yDelta > (3 * BALL_GPF))
+                            yDelta = 3 * BALL_GPF;
+                    }
                 } else if ((playerYposition+(HEIGHT_PLAYER/4)+(SIZE_BALL/2)) > yPosition) { // Middle area
                 } else if ((playerYposition+(HEIGHT_PLAYER/2)+(SIZE_BALL/2)) > yPosition) { // Lower area
-                    if (yDelta > 0) yDelta*=2;
-                    else yDelta/=2;
+                    if (yDelta > 0) {
+                        yDelta *= 2;
+                        if (yDelta > (3 * BALL_GPF))
+                            yDelta = 3 * BALL_GPF;
+                    }
+                    else {
+                        yDelta /= 2;
+                    }
                 } else {
                     nextX = xPosition + xDelta;
                     return GOAL_MOVEMENT;
                 }
                 nextX = 2 * MIN_LIMIT_X_BALL - xDelta - xPosition;
                 xDelta = -xDelta;
-                return BOUNCE_MOVEMENT;
+                return BOUNCE_PLAYER;
             } else {
                 nextX = xPosition + xDelta;
                 return OK_MOVEMENT;
