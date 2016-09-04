@@ -12,10 +12,10 @@ public class PingGameClass {
 
     // PING GAME STATES
     public static final int START = 0x10;
-    public static final int GETTING_READY = 0x10;
-    public static final int PLAYING = 0x20;
-    public static final int GOAL = 0x30;
-    public static final int END = 0x40;
+    public static final int GETTING_READY = 0x20;
+    public static final int PLAYING = 0x30;
+    public static final int GOAL = 0x40;
+    public static final int END = 0x50;
 
     private static final int BALL_GPF = 2;
     private static final int PLAYER_GPF = 2;
