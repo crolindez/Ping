@@ -379,6 +379,8 @@ public class PingGameClass {
                 return OK_MOVEMENT;
             } else {
                 nextX = MAX_LIMIT_X_BALL;
+                xDelta = 0;
+                yDelta = 0;
                 return OK_MOVEMENT;
             }
         }
