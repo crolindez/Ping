@@ -374,8 +374,11 @@ public class PingGameClass {
                 nextX = 2 * MIN_LIMIT_X_BALL - xDelta - xPosition;
                 xDelta = -xDelta;
                 return BOUNCE_PLAYER;
-            } else {
+            } else if ((xPosition + xDelta) <= MAX_LIMIT_X_BALL) {
                 nextX = xPosition + xDelta;
+                return OK_MOVEMENT;
+            } else {
+                nextX = MAX_LIMIT_X_BALL;
                 return OK_MOVEMENT;
             }
         }

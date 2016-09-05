@@ -249,7 +249,7 @@ public class GameFragment extends Fragment {
         pingGame.setState(PingGameClass.END);
         mListener = null;
     }
-    
+
     public class GameRunnable implements Runnable {
 
         boolean owner;
