@@ -161,6 +161,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
     public void addMessage(String text) {
         if (launchFragment != null) launchFragment.addMessage(text);
     }
+
     public void changeConnectionState(boolean state) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 

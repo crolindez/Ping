@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -196,7 +197,7 @@ public class GameFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener.closeConnection(0);
+        if (mListener != null) mListener.closeConnection(0);
         pingGame.setState(PingGameClass.END);
         mListener = null;
     }
@@ -229,6 +230,7 @@ public class GameFragment extends Fragment {
                 pingGame.setState(PingGameClass.GOAL);
                 index ++;
             } else {
+                Log.e("TAG",arg[index]);
                 index++; //rubbish
             }
 
@@ -240,6 +242,14 @@ public class GameFragment extends Fragment {
 
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mListener != null) mListener.closeConnection(0);
+        pingGame.setState(PingGameClass.END);
+        mListener = null;
+    }
+    
     public class GameRunnable implements Runnable {
 
         boolean owner;
