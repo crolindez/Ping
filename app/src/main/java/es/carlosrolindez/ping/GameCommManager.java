@@ -18,12 +18,10 @@ public class GameCommManager implements Runnable {
 
     private Socket socket = null;
     private Handler handler;
-    private int index;
 
     public GameCommManager(Socket socket, Handler handler) {
         this.socket = socket;
         this.handler = handler;
-        index = 0;
     }
 
     private InputStream iStream;
@@ -75,9 +73,7 @@ public class GameCommManager implements Runnable {
 
     public void write(String buffer) {
         try {
-            String message = String.format(Locale.US,"%d ",index) + buffer;
-            oStream.write(message.getBytes(Charset.defaultCharset()));
-            index++;
+            oStream.write(buffer.getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
         }
     }

@@ -1,6 +1,7 @@
 package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Build;
@@ -30,8 +31,6 @@ public class GameFragment extends Fragment {
     private String message;
 
     private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
-
-    private int indexMessage;
 
     // MESSAGE HEADERS
     private final String BALL = "BALL";
@@ -66,8 +65,6 @@ public class GameFragment extends Fragment {
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.hide();
 
-        indexMessage = 0;
-
         mListener = (OnGameFragmentInteractionListener) getActivity();
 
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
@@ -96,7 +93,24 @@ public class GameFragment extends Fragment {
         ImageButton buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
         ImageButton buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
         TextView leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
+        TextView colonScoreText = (TextView) mContentView.findViewById(R.id.colon);
         TextView rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
+        TextView playerLeftText = (TextView) mContentView.findViewById(R.id.player_left);
+        TextView playerRightText = (TextView) mContentView.findViewById(R.id.player_right);
+
+        Typeface myTypeface = Typeface.createFromAsset(getActivity().getAssets(), "seven_segments.ttf");
+        leftScoreText.setTypeface(myTypeface);
+        rightScoreText.setTypeface(myTypeface);
+        colonScoreText.setTypeface(myTypeface);
+
+        if (connectionOwner) {
+            playerLeftText.setText("Player 1");
+            playerRightText.setText("Player 2");
+        } else {
+            playerRightText.setText("Player 1");
+            playerLeftText.setText("Player 2");
+
+        }
 
         pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
 
@@ -208,10 +222,6 @@ public class GameFragment extends Fragment {
         String arg[] = mes.split(" ");
         int index = 0;
         while (index < arg.length) {
-            if (Integer.parseInt(arg[index]) != indexMessage) {
-            }
-            index++;
-            indexMessage++;
             if (arg[index].equals(INIT)) {
                 new Thread(new GameRunnable(true)).start();
                 index++;

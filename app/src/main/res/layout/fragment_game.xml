@@ -32,73 +32,111 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:baselineAligned="false"
-            android:id="@+id/game_zone"
-            android:weightSum="1">
+            android:orientation="vertical">
 
-
-            <TextView
-                android:text=":"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/colon"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true" />
+                android:baselineAligned="false" >
 
-            <TextView
-                android:text="04"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/leftScore"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@+id/colon"
-                android:layout_margin="20dp"/>
+                <TextView
+                    android:text="Player 1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/player_left"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentLeft="true"
+                    android:textSize="15sp" />
 
-            <TextView
-                android:text="06"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/rightScore"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@+id/colon"
-                android:layout_margin="20dp" />
+                <TextView
+                    android:text=":"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/colon"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:textColor="#00ff00"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:text="04"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/leftScore"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/colon"
+                    android:layout_margin="5dp"
+                    android:textColor="#00ff00"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:text="06"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rightScore"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/colon"
+                    android:layout_margin="5dp"
+                    android:textColor="#00ff00"
+                    android:textSize="30sp" />
 
 
-            <ImageView
-                android:src="@drawable/brick"
-                android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:id="@+id/ball"/>
 
-            <ImageView
-                android:src="@drawable/brick"
-                android:layout_width="7dip"
-                android:layout_height="7dip"
-                android:id="@+id/player1"
-                android:scaleType="fitXY" />
-            <ImageView
-                android:src="@drawable/brick"
-                android:layout_width="7dip"
-                android:layout_height="7dip"
-                android:id="@+id/player2"
-                android:scaleType="fitXY" />
-            <ImageView
-                android:src="@drawable/brick"
-                android:layout_width="100dip"
-                android:layout_height="1dip"
-                android:id="@+id/topbar"
-                android:scaleType="fitXY"/>
-            <ImageView
-                android:src="@drawable/brick"
-                android:layout_width="100dip"
-                android:layout_height="1dip"
-                android:id="@+id/bottombar"
-                android:scaleType="fitXY" />
+                <TextView
+                    android:text="Player 2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/player_right"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:textSize="15sp" />
 
-        </RelativeLayout>
+            </RelativeLayout>
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:baselineAligned="false"
+                android:id="@+id/game_zone"
+                android:weightSum="1">
+
+
+
+                <ImageView
+                    android:src="@drawable/brick"
+                    android:layout_width="50dip"
+                    android:layout_height="50dip"
+                    android:id="@+id/ball"/>
+
+                <ImageView
+                    android:src="@drawable/brick"
+                    android:layout_width="7dip"
+                    android:layout_height="7dip"
+                    android:id="@+id/player1"
+                    android:scaleType="fitXY" />
+                <ImageView
+                    android:src="@drawable/brick"
+                    android:layout_width="7dip"
+                    android:layout_height="7dip"
+                    android:id="@+id/player2"
+                    android:scaleType="fitXY" />
+                <ImageView
+                    android:src="@drawable/brick"
+                    android:layout_width="100dip"
+                    android:layout_height="1dip"
+                    android:id="@+id/topbar"
+                    android:scaleType="fitXY"/>
+                <ImageView
+                    android:src="@drawable/brick"
+                    android:layout_width="100dip"
+                    android:layout_height="1dip"
+                    android:id="@+id/bottombar"
+                    android:scaleType="fitXY" />
+
+            </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>
