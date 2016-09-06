@@ -49,6 +49,9 @@
                     android:id="@+id/player_left"
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:textSize="15sp" />
 
                 <TextView
@@ -68,6 +71,7 @@
                     android:id="@+id/leftScore"
                     android:layout_centerVertical="true"
                     android:layout_toLeftOf="@+id/colon"
+                    android:layout_toStartOf="@+id/colon"
                     android:layout_margin="5dp"
                     android:textColor="#00ff00"
                     android:textSize="30sp" />
@@ -79,6 +83,7 @@
                     android:id="@+id/rightScore"
                     android:layout_centerVertical="true"
                     android:layout_toRightOf="@+id/colon"
+                    android:layout_toEndOf="@+id/colon"
                     android:layout_margin="5dp"
                     android:textColor="#00ff00"
                     android:textSize="30sp" />
@@ -92,6 +97,9 @@
                     android:id="@+id/player_right"
                     android:layout_centerVertical="true"
                     android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginEnd="5dp"
                     android:textSize="15sp" />
 
             </RelativeLayout>
