@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,8 +15,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import java.nio.charset.Charset;
 
 
 public class GameFragment extends Fragment {
@@ -33,6 +30,8 @@ public class GameFragment extends Fragment {
     private String message;
 
     private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+
+    private int indexMessage;
 
     // MESSAGE HEADERS
     private final String BALL = "BALL";
@@ -66,6 +65,8 @@ public class GameFragment extends Fragment {
         View mContentView = inflater.inflate(R.layout.fragment_game, container, false);
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.hide();
+
+        indexMessage = 0;
 
         mListener = (OnGameFragmentInteractionListener) getActivity();
 
@@ -118,7 +119,7 @@ public class GameFragment extends Fragment {
                 @Override
                 public void run() {
                     message = INIT ;
-                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                    gameManager.write(message);
                     new Thread(new GameRunnable(false)).start();
                 }
             }, 500);
@@ -129,7 +130,7 @@ public class GameFragment extends Fragment {
             public void run() {
                 if (pingGame.movePlayerUp()) {
                     message = PLAYER + pingGame.playerMessage();
-                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                    gameManager.write(message);
                 }
                 if (handlerUp!=null)
                     handlerUp.postDelayed(this,1000/FPS);
@@ -141,7 +142,7 @@ public class GameFragment extends Fragment {
             public void run() {
                 if (pingGame.movePlayerDown()) {
                     message = PLAYER + pingGame.playerMessage();
-                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                    gameManager.write(message);
                 }
                 if (handlerDown!=null)
                     handlerDown.postDelayed(this,1000/FPS);
@@ -207,33 +208,35 @@ public class GameFragment extends Fragment {
         String arg[] = mes.split(" ");
         int index = 0;
         while (index < arg.length) {
+            if (Integer.parseInt(arg[index]) != indexMessage) {
+            }
+            index++;
+            indexMessage++;
             if (arg[index].equals(INIT)) {
                 new Thread(new GameRunnable(true)).start();
-                index ++;
+                index++;
 
-            } else if ((arg[index].equals(BALL)) && ((arg.length-index)>=5 ) ){
+            } else if ((arg[index].equals(BALL)) && ((arg.length - index) >= 5)) {
                 pingGame.setState(PingGameClass.PLAYING);
-                pingGame.setBall(   Float.parseFloat(arg[index+1]),
-                                    Float.parseFloat(arg[index+2]),
-                                    Float.parseFloat(arg[index+3]),
-                                    Float.parseFloat(arg[index+4]) );
-                tg.startTone(ToneGenerator.TONE_DTMF_8,50);
-                index +=5;
+                pingGame.setBall(Float.parseFloat(arg[index + 1]),
+                        Float.parseFloat(arg[index + 2]),
+                        Float.parseFloat(arg[index + 3]),
+                        Float.parseFloat(arg[index + 4]));
+                tg.startTone(ToneGenerator.TONE_DTMF_8, 50);
+                index += 5;
 
-            } else if ((arg[index].equals(PLAYER)) && ((arg.length-index)>=2 )) {
-                pingGame.setPlayerRight( Float.parseFloat(arg[index+1]));
-                index +=2;
-            } else if (arg[index].equals(GOAL))  {
+            } else if ((arg[index].equals(PLAYER)) && ((arg.length - index) >= 2)) {
+                pingGame.setPlayerRight(Float.parseFloat(arg[index + 1]));
+                index += 2;
+            } else if (arg[index].equals(GOAL)) {
                 pingGame.leftGoal();
                 pingGame.reset();
                 tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
                 pingGame.setState(PingGameClass.GOAL);
-                index ++;
+                index++;
             } else {
-                Log.e("TAG",arg[index]);
                 index++; //rubbish
             }
-
         }
     }
 
@@ -277,7 +280,7 @@ public class GameFragment extends Fragment {
                 if (owner) {
                     pingGame.setState(PingGameClass.PLAYING);
                     message = BALL + pingGame.ballMessage();
-                    gameManager.write(message.getBytes(Charset.defaultCharset()));
+                    gameManager.write(message);
                 }
 
                 gameTimer= System.currentTimeMillis();
@@ -295,7 +298,7 @@ public class GameFragment extends Fragment {
                                     switch (event) {
                                         case PingGameClass.BOUNCE_PLAYER:
                                             message = BALL + pingGame.ballMessage();
-                                            gameManager.write(message.getBytes(Charset.defaultCharset()));
+                                            gameManager.write(message);
                                             tg.startTone(ToneGenerator.TONE_DTMF_8, 50);
                                             break;
                                         case PingGameClass.BOUNCE_WALL:
@@ -303,7 +306,7 @@ public class GameFragment extends Fragment {
                                             break;
                                         case PingGameClass.GOAL_MOVEMENT:
                                             message = GOAL + " ";
-                                            gameManager.write(message.getBytes(Charset.defaultCharset()));
+                                            gameManager.write(message);
                                             pingGame.setState(PingGameClass.GETTING_READY);
                                             tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
                                             break;
@@ -320,7 +323,7 @@ public class GameFragment extends Fragment {
                             e.printStackTrace();
                         }
                         message = BALL + pingGame.ballMessage();
-                        gameManager.write(message.getBytes(Charset.defaultCharset()));
+                        gameManager.write(message);
                         gameTimer= System.currentTimeMillis();
                         pingGame.setState(PingGameClass.PLAYING);
                     } else if  ( (pingGame.getState() == PingGameClass.GOAL) ||(pingGame.getState() == PingGameClass.START) ) {
