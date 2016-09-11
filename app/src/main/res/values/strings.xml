@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Ping</string>
     <string name="player">Player</string>
+    <string name="intro_name">Enter name</string>
 </resources>

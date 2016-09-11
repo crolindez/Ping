@@ -23,6 +23,8 @@ public class GameFragment extends Fragment {
     private static final String TAG = "GameFragment";
 
     private boolean connectionOwner;
+    private String playerName;
+    private TextView playerRightText;
 
     private GameCommManager gameManager = null;
 
@@ -51,9 +53,10 @@ public class GameFragment extends Fragment {
         connectionOwner = false;
     }
 
-    public void setGameFragment(GameCommManager manager, boolean ownership) {
+    public void setGameFragment(GameCommManager manager, boolean ownership, String name) {
         connectionOwner = ownership;
         gameManager = manager;
+        playerName = name;
     }
 
 
@@ -96,21 +99,17 @@ public class GameFragment extends Fragment {
         TextView colonScoreText = (TextView) mContentView.findViewById(R.id.colon);
         TextView rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
         TextView playerLeftText = (TextView) mContentView.findViewById(R.id.player_left);
-        TextView playerRightText = (TextView) mContentView.findViewById(R.id.player_right);
+        playerRightText = (TextView) mContentView.findViewById(R.id.player_right);
 
         Typeface myTypeface = Typeface.createFromAsset(getActivity().getAssets(), "seven_segments.ttf");
         leftScoreText.setTypeface(myTypeface);
         rightScoreText.setTypeface(myTypeface);
         colonScoreText.setTypeface(myTypeface);
 
-        if (connectionOwner) {
-            playerLeftText.setText("Player 1");
-            playerRightText.setText("Player 2");
-        } else {
-            playerRightText.setText("Player 1");
-            playerLeftText.setText("Player 2");
 
-        }
+        playerLeftText.setText(playerName);
+        playerRightText.setText("Player 2");
+
 
         pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
 
@@ -132,7 +131,7 @@ public class GameFragment extends Fragment {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    message = INIT ;
+                    message = INIT + " " + playerName ;
                     gameManager.write(message);
                     new Thread(new GameRunnable(false)).start();
                 }
@@ -222,10 +221,16 @@ public class GameFragment extends Fragment {
         String arg[] = mes.split(" ");
         int index = 0;
         while (index < arg.length) {
-            if (arg[index].equals(INIT)) {
-                new Thread(new GameRunnable(true)).start();
-                index++;
 
+            if ((arg[index].equals(INIT)) && ((arg.length - index) >= 2)) {
+                playerRightText.setText(arg[index + 1]);
+                index++;
+                if (connectionOwner) {
+                    message = INIT + " " + playerName;
+                    gameManager.write(message);
+                    new Thread(new GameRunnable(true)).start();
+
+                }
             } else if ((arg[index].equals(BALL)) && ((arg.length - index) >= 5)) {
                 pingGame.setState(PingGameClass.PLAYING);
                 pingGame.setBall(Float.parseFloat(arg[index + 1]),
