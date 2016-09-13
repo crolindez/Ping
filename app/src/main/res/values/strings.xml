@@ -2,4 +2,5 @@
     <string name="app_name">Ping</string>
     <string name="player">Player</string>
     <string name="intro_name">Enter name</string>
+    <string name="bt_not_available">Bluetooth is not available</string>
 </resources>

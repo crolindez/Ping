@@ -1,14 +1,13 @@
 
 package es.carlosrolindez.ping;
 
+import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.charset.Charset;
-import java.util.Locale;
 
 /**
  * Handles reading and writing of messages with socket buffers. Uses a Handler
@@ -16,17 +15,20 @@ import java.util.Locale;
  */
 public class GameCommManager implements Runnable {
 
-    private Socket socket = null;
+    private OutputStream mmOutStream;
+    private boolean paused;
+    public boolean closeThread;
+
+    private static final String TAG = "GameCommManager";
+    private InputStream iStream;
+    private OutputStream oStream;
+    private BluetoothSocket socket = null;
     private Handler handler;
 
-    public GameCommManager(Socket socket, Handler handler) {
+    public GameCommManager(BluetoothSocket socket, Handler handler) {
         this.socket = socket;
         this.handler = handler;
     }
-
-    private InputStream iStream;
-    private OutputStream oStream;
-    private static final String TAG = "GameCommManager";
 
     @Override
     public void run() {

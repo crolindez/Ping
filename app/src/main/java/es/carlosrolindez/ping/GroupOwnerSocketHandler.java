@@ -1,7 +1,10 @@
 
 package es.carlosrolindez.ping;
 
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -14,31 +17,45 @@ public class GroupOwnerSocketHandler extends Thread {
 
     private static final String TAG = "GroupOwnerSocketHandler";
     private Handler handler;
+    private BluetoothSocket mSocket;
+    private BluetoothDevice mDevice;
 
- //   private final int THREAD_COUNT = 10;
 
-    public GroupOwnerSocketHandler(Handler handler) {
+
+    public GroupOwnerSocketHandler(Handler handler, BluetoothDevice device ) {
+
         this.handler = handler;
+        this.mDevice = device;
+
+        try {
+            mSocket = mDevice.createRfcommSocketToServiceRecord(Constants.MY_UUID);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void run() {
+
         GameCommManager chat;
-        ServerSocket socket = null;
+        // Make a connection to the BluetoothSocket
         try {
-            socket = new ServerSocket( PingActivity.SERVER_PORT);
-            chat = new GameCommManager(socket.accept(), handler);
+            mSocket.connect();
+            chat = new GameCommManager(mSocket, handler);
             new Thread(chat).start();
         } catch (IOException e) {
+            // Close the socket
             try {
-                if (socket != null && !socket.isClosed())
-                    socket.close();
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
+                mSocket.close();
+            } catch (IOException e2) {
+                e2.printStackTrace();
             }
-            e.printStackTrace();
+
         }
+
     }
+
 
 
 }

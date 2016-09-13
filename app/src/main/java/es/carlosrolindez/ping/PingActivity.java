@@ -1,16 +1,19 @@
 package es.carlosrolindez.ping;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.IBluetooth;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.net.wifi.p2p.WifiP2pConfig;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -19,27 +22,37 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import java.net.InetAddress;
 
-
-public class PingActivity extends FragmentActivity  implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.PeerListListener,
-        LaunchFragment.OnDeviceSelected,GameFragment.OnGameFragmentInteractionListener, WiFiDirectBroadcastReceiver.OnWiFiDirectBroadcastInteractionListener,
-        Handler.Callback {
+public class PingActivity extends FragmentActivity  implements LaunchFragment.OnDeviceSelected,
+                                                                BtBroadcastReceiver.OnBtBroadcastInteractionListener,
+                                                                GameFragment.OnGameFragmentInteractionListener,
+                                                                Handler.Callback {
 
     private static final String TAG = "PingActivity";
 
-    public static final int SERVER_PORT = 4545;
+//    public static final int SERVER_PORT = 4545;
 
 
     public static final int MESSAGE = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
 
-    private WifiP2pManager mManager;
+/*    private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
-    private WiFiDirectBroadcastReceiver mReceiver = null;
+    private BtBroadcastReceiver mReceiver = null;
     private WifiP2pDeviceList mDeviceList;
+*/
+
+    private BluetoothAdapter mBluetoothAdapter = null;
+    private BtBroadcastReceiver mReceiver = null;
+    private static boolean mBtIsBound = false;
+ //   private static IBluetooth iBt = null;
+
+
+
 
     private final IntentFilter mIntentFilter = new IntentFilter();
     private Handler handler = new Handler(this);
@@ -57,6 +70,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_launch);
 
         preferences = getSharedPreferences("Name", MODE_PRIVATE);
@@ -65,15 +79,35 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         if (playerName.equals(getResources().getString(R.string.player)))
             createDialog();
 
-        mManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
-        mChannel = mManager.initialize(this, getMainLooper(), null);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // If the adapter is null, then Bluetooth is not supported
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(this, getString(R.string.bt_not_availabe), Toast.LENGTH_LONG).show();
+            finish();
+        }
+
+//        mManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
+//        mChannel = mManager.initialize(this, getMainLooper(), null);
 
 
 
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        mIntentFilter.addAction(Constants.NameFilter);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+
+  //      registerReceiver(mBtReceiver, mIntentFilter);
+
+
+        searchBtPairedNames(/*context*/);
 
         launchFragment = new LaunchFragment();
         gameFragment = new GameFragment();
@@ -82,21 +116,31 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         ft.replace(R.id.frame_container, launchFragment, "services");
         ft.commit();
 
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this, this, this);
+        mReceiver = new BtBroadcastReceiver(handler,this);
 
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
+        }
+
+    }
      @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(mReceiver, mIntentFilter);
-        peersAgain();
+         registerReceiver(mReceiver, mIntentFilter);
+         searchBtPairedNames();
     }
     /* unregister the broadcast receiver */
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(mReceiver);
+        registerReceiver(mReceiver, mIntentFilter);
     }
 
     @Override
@@ -110,6 +154,10 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+            case R.id.bt_scan:
+                // Launch the DeviceListActivity to see devices and do scan
+                doDiscovery();
+                return true;
             case R.id.menu_player_name:
                 createDialog();
                 return true;
@@ -117,7 +165,17 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Start device discover with the BluetoothAdapter
+     */
+    private void doDiscovery() {
 
+        // Indicate scanning in the title
+        setProgressBarIndeterminateVisibility(true);
+
+        // Request discover from BluetoothAdapter
+        mBluetoothAdapter.startDiscovery();
+    }
 
     @Override
     public boolean handleMessage(Message msg) {
@@ -141,7 +199,44 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
         return true;
     }
 
-    protected void peersAgain() {
+
+    public void searchBtPairedNames(/*Context context*/) {
+        Intent intent = new Intent(IBluetooth.class.getName());
+
+        if (!mBtIsBound) {
+            if (bindService(intent, mBtServiceConnection, Context.BIND_AUTO_CREATE)) {
+
+            } else {
+            }
+        } else {
+            Intent intent2 = new Intent();
+            intent2.setAction(Constants.NameFilter);
+            sendBroadcast(intent2);
+        }
+    }
+
+    public ServiceConnection mBtServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBtIsBound = true;
+ //           iBt = IBluetooth.Stub.asInterface(service);
+            Intent intent = new Intent();
+            intent.setAction(Constants.NameFilter);
+            sendBroadcast(intent);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBtIsBound = false;
+
+        }
+
+    };
+
+
+
+ /*   protected void peersAgain() {
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -153,18 +248,18 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
                 addMessage("Discovery failure");
             }
         });
-    }
+    }*/
 
 
-    @Override
+ /*   @Override
     public void onPeersAvailable(WifiP2pDeviceList deviceList) {
         mDeviceList = deviceList;
         if (launchFragment!=null) launchFragment.showList(mDeviceList);
-    }
+    }*/
 
 
 
-    @Override
+/*    @Override
     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
 
         // InetAddress from WifiP2pInfo struct.
@@ -195,21 +290,21 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
 
     }
-
+*/
     public void addMessage(String text) {
         if (launchFragment != null) launchFragment.addMessage(text);
     }
 
-    public void changeConnectionState(boolean state) {
+ /*   public void changeConnectionState(boolean state) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
         ft.replace(R.id.frame_container, launchFragment, "services");
         ft.commit();
         peersAgain();
     }
+*/
 
-
-    public void connect(String name) {
+ /*   public void connect(String name) {
 
 
 
@@ -234,8 +329,8 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
         }
     }
-
-    public void closeConnection(int code){
+*/
+ /*   public void closeConnection(int code){
 
         if (mManager != null && mChannel != null) {
 
@@ -255,7 +350,7 @@ public class PingActivity extends FragmentActivity  implements WifiP2pManager.Co
 
         }
     }
-
+*/
     public void createDialog() {
 
 
