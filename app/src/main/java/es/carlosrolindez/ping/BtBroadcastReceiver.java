@@ -57,28 +57,36 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
         // When discovery finds a device
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             // Get the BluetoothDevice object from the Intent
+            mListener.addMessage("BT FOUND");
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             mListener.addDevice(device);
 
             // When discovery is finished, change the Activity title
         } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 //               ((KBfinderActivity)context).setProgressBarIndeterminateVisibility(false);
-            mListener.stopProgressBar();
+            mListener.addMessage("BT DISCOVERY FINISHED");
+            mListener.stopDiscovery();
         } else if (Constants.NameFilter.equals(action)) {
+            mListener.addMessage("BT PAIRED DEVICES");
             mListener.showSet(getNames());
 
         } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            mListener.addMessage("ACL CONNECTED");
 //              mListener.connect(device);
 
 
         } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            mListener.addMessage("ACL DISCONNECTED");
 //            mListener.disconnect(device);
         } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            if (device.getBondState()==BluetoothDevice.BOND_BONDED) {
-                mListener.connect(device);
+            if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+                mListener.addMessage("BONDED");
+                mListener.connectDevice(device);
+            } else {
+                mListener.addMessage("UNBONDED");
             }
 
         }
@@ -148,8 +156,8 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
         void addMessage(String message);
         void showSet(Set<BluetoothDevice> pairedDevice);
         void addDevice(BluetoothDevice device);
-        void stopProgressBar();
-        void connect(BluetoothDevice device);
+        void stopDiscovery();
+        void connectDevice(BluetoothDevice device);
 
 
     }

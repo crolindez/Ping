@@ -11,7 +11,7 @@
         android:background="@drawable/windows"
         android:baselineAligned="false">
         <ListView
-            android:id="@+id/peers"
+            android:id="@+id/devicesbt"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

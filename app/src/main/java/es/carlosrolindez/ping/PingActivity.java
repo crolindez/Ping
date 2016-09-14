@@ -26,10 +26,12 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Iterator;
+import java.util.Set;
+
 
 public class PingActivity extends FragmentActivity  implements LaunchFragment.OnDeviceSelected,
                                                                 BtBroadcastReceiver.OnBtBroadcastInteractionListener,
-                                                                GameFragment.OnGameFragmentInteractionListener,
                                                                 Handler.Callback {
 
     private static final String TAG = "PingActivity";
@@ -49,7 +51,12 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     private BluetoothAdapter mBluetoothAdapter = null;
     private BtBroadcastReceiver mReceiver = null;
     private static boolean mBtIsBound = false;
+    private Set<BluetoothDevice> mPairedDevices;
  //   private static IBluetooth iBt = null;
+
+    private ServerSocketHandler serviceThread;
+    private ClientSocketHandler clientThread;
+
 
 
 
@@ -83,7 +90,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
-            Toast.makeText(this, getString(R.string.bt_not_availabe), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.bt_not_available), Toast.LENGTH_LONG).show();
             finish();
         }
 
@@ -116,8 +123,9 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         ft.replace(R.id.frame_container, launchFragment, "services");
         ft.commit();
 
-        mReceiver = new BtBroadcastReceiver(handler,this);
 
+        mReceiver = new BtBroadcastReceiver(this);
+        doDiscovery();
     }
 
     @Override
@@ -175,6 +183,21 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         // Request discover from BluetoothAdapter
         mBluetoothAdapter.startDiscovery();
+
+        if (serviceThread!=null) serviceThread.cancel();
+        serviceThread = new ServerSocketHandler(handler,mBluetoothAdapter);
+        serviceThread.start();
+
+    }
+
+    public void stopDiscovery() {
+        setProgressBarIndeterminateVisibility(false);
+
+        // Request discover from BluetoothAdapter
+        mBluetoothAdapter.cancelDiscovery();
+
+        if (serviceThread!=null) serviceThread.cancel();
+
     }
 
     @Override
@@ -278,12 +301,12 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         if (ownership) {
             addMessage("Group Formed.  I am the owner");
-            thread = new GroupOwnerSocketHandler(handler);
+            thread = new ClientSocketHandler(handler);
             thread.start();
 
         } else {
             addMessage("Group Formed.  I am NOT the owner");
-            thread = new ClientSocketHandler(handler, info.groupOwnerAddress);
+            thread = new ServerSocketHandler(handler, info.groupOwnerAddress);
             thread.start();
         }
 
@@ -291,11 +314,81 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
     }
 */
+    public void showSet(Set<BluetoothDevice> pairedDevices) {
+        if (pairedDevices == null ) return;
+        if (launchFragment == null ) return;
+        String currentName;
+
+        if (pairedDevices.size() > 0) {
+            if (mPairedDevices==null) {
+                try {
+                    mPairedDevices.clear();
+                } catch (UnsupportedOperationException e) {
+                    e.printStackTrace();
+                }
+            }
+            mPairedDevices = pairedDevices;
+            launchFragment.deleteDeviceList();
+            for (BluetoothDevice device : pairedDevices) {
+                currentName = device.getName();
+ /*               try {
+                    currentName = iBt.getRemoteAlias(device);
+                } catch (RemoteException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }*/
+                launchFragment.addDevice(currentName);
+            }
+        }
+    }
+
+    public void addDevice(BluetoothDevice device) {
+        if (device==null) return;
+        if (mPairedDevices.contains(device)) return;
+        mPairedDevices.add(device);
+    }
+
     public void addMessage(String text) {
         if (launchFragment != null) launchFragment.addMessage(text);
     }
 
- /*   public void changeConnectionState(boolean state) {
+    public void connectDeviceItem(int position) {
+
+        BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+        BluetoothDevice device=null;
+
+        int index=0;
+
+        for (Iterator<BluetoothDevice> it = mPairedDevices.iterator(); it.hasNext(); ) {
+            if (index==position) {
+                device = it.next();
+                break;
+            }
+            index++;
+        }
+        if (index==position) {
+            if (device.getBondState() != BluetoothDevice.BOND_BONDED)
+                device.createBond();
+            else {
+                connectDevice(device);
+            }
+        }
+
+
+    }
+
+    public void connectDevice(BluetoothDevice device) {
+
+        stopDiscovery();
+
+        if (clientThread!=null) clientThread.cancel();
+        clientThread = new ClientSocketHandler(handler,device);
+        clientThread.start();
+
+
+    }
+
+/*   public void changeConnectionState(boolean state) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
         ft.replace(R.id.frame_container, launchFragment, "services");

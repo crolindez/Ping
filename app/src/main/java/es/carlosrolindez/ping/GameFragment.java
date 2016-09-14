@@ -28,8 +28,6 @@ public class GameFragment extends Fragment {
 
     private GameCommManager gameManager = null;
 
-    private OnGameFragmentInteractionListener mListener;
-
     private String message;
 
     private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
@@ -68,23 +66,21 @@ public class GameFragment extends Fragment {
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.hide();
 
-        mListener = (OnGameFragmentInteractionListener) getActivity();
-
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
 
         // Navigation bar hiding:  Backwards compatible to ICS.
-        if (Build.VERSION.SDK_INT >= 14) {
+ //       if (Build.VERSION.SDK_INT >= 14) {
             uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        }
+ //       }
 
         // Status bar hiding: Backwards compatible to Jellybean
-        if (Build.VERSION.SDK_INT >= 16) {
+ //       if (Build.VERSION.SDK_INT >= 16) {
             uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
+ //       }
 
-        if (Build.VERSION.SDK_INT >= 19) {
+ //       if (Build.VERSION.SDK_INT >= 19) {
             uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
+ //       }
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
@@ -211,9 +207,8 @@ public class GameFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        if (mListener != null) mListener.closeConnection(0);
+        gameManager.cancel();
         pingGame.setState(PingGameClass.END);
-        mListener = null;
     }
 
 
@@ -255,17 +250,17 @@ public class GameFragment extends Fragment {
         }
     }
 
-    public interface OnGameFragmentInteractionListener {
+/*    public interface OnGameFragmentInteractionListener {
         void closeConnection(int code);
 
-    }
+    }*/
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mListener != null) mListener.closeConnection(0);
+        gameManager.cancel();
         pingGame.setState(PingGameClass.END);
-        mListener = null;
+
     }
 
     public class GameRunnable implements Runnable {

@@ -1,61 +1,69 @@
 
 package es.carlosrolindez.ping;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 
+/**
+ * The implementation of a ServerSocket handler. This is used by the wifi p2p
+ * group owner.
+ */
 public class ClientSocketHandler extends Thread {
 
     private static final String TAG = "ClientSocketHandler";
-    private BluetoothAdapter mBluetoothAdapter = null;
-    private Handler mHandler;
-    private GameCommManager chat;
+    private Handler handler;
+    private BluetoothSocket mSocket;
+    private BluetoothDevice mDevice;
 
-    private final BluetoothServerSocket mmServerSocket;
 
-    public ClientSocketHandler(Handler handler, BluetoothAdapter mBluetoothAdapter) {
-        mHandler = handler;
-        BluetoothServerSocket tmp = null;
+
+    public ClientSocketHandler(Handler handler, BluetoothDevice device ) {
+
+        this.handler = handler;
+        this.mDevice = device;
+
         try {
-            // MY_UUID is the app's UUID string, also used by the client code
-            tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(Constants.NameService, Constants.MY_UUID);
-        } catch (IOException e) { }
-        mmServerSocket = tmp;
-    }
+            mSocket = mDevice.createRfcommSocketToServiceRecord(Constants.MY_UUID);
 
-    public void run() {
-        if (mmServerSocket==null) return;
-        BluetoothSocket socket = null;
-        // Keep listening until exception occurs or a socket is returned
-        while (true) {
-            try {
-                socket = mmServerSocket.accept();
-            } catch (IOException e) {
-                break;
-            }
-            // If a connection was accepted
-            if (socket != null) {
-                // Do work to manage the connection (in a separate thread)
-                chat = new GameCommManager(socket, mHandler);
-                new Thread(chat).start();
-                try {
-                    mmServerSocket.close();
-                } catch (IOException e) {
-                    break;
-                } break;
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    /** Will cancel the listening socket, and cause the thread to finish */
+    @Override
+    public void run() {
+
+        GameCommManager chat;
+        // Make a connection to the BluetoothSocket
+        try {
+            mSocket.connect();
+            chat = new GameCommManager(mSocket, handler);
+            new Thread(chat).start();
+        } catch (IOException e) {
+            // Close the socket
+            try {
+                mSocket.close();
+            } catch (IOException e2) {
+                e2.printStackTrace();
+            }
+
+        }
+
+    }
+
     public void cancel() {
         try {
-            mmServerSocket.close();
-        } catch (IOException e) { }
+            mSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+
 
 }

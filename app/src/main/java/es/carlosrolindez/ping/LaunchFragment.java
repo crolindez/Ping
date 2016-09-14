@@ -1,6 +1,8 @@
 package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -26,8 +28,8 @@ public class LaunchFragment extends Fragment {
 
     private ArrayAdapter<String> messageListAdapter = null;
     private ArrayList<String> messageList;
-    private ArrayAdapter<String> peerListAdapter = null;
-    private ArrayList<String> peerList;
+    private ArrayAdapter<String> deviceListAdapter = null;
+    private ArrayList<String> deviceList;
 
     private View mContentView = null;
 
@@ -108,14 +110,14 @@ public class LaunchFragment extends Fragment {
         messageListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, messageList);
         messageView.setAdapter(messageListAdapter);
 
-        ListView peerView = (ListView) mContentView.findViewById(R.id.peers);
-        peerList = new ArrayList<>();
-        peerListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, peerList);
-        peerView.setAdapter(peerListAdapter);
+        ListView peerView = (ListView) mContentView.findViewById(R.id.devicesbt);
+        deviceList = new ArrayList<>();
+        deviceListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, deviceList);
+        peerView.setAdapter(deviceListAdapter);
         peerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-            mListener.connect(peerList.get(position));
+            mListener.connectDeviceItem(position);
 
             }
 
@@ -130,40 +132,19 @@ public class LaunchFragment extends Fragment {
         messageListAdapter.notifyDataSetChanged();
     }
 
-    public void showList(WifiP2pDeviceList list) {
-        peerList.clear();
-        for (WifiP2pDevice device:list.getDeviceList()) {
-            peerList.add(0,device.deviceName);
-            //peerList.add(1,"" + device.status);
-        }
-        peerListAdapter.notifyDataSetChanged();
+    public void addDevice(String deviceName) {
+        deviceList.add(0, deviceName);
+        deviceListAdapter.notifyDataSetChanged();
+    }
 
-        messageList.add(0, "New device list");
-        messageListAdapter.notifyDataSetChanged();
-
-    //    LinearLayout window =(LinearLayout) mContentView.findViewById(R.id.game_zone);
-
-     //   height = window.getHeight();
-     //   width = window.getWidth();
-        //       ViewGroup.LayoutParams params = window.getLayoutParams();
-        //       height = params.height;
-        //       width = params.width;
-     //   xGU = width / XGU;
-     //   yGU = height / YGU;
-
-  //      messageList.add(0, "width = " + width);
-  //      messageList.add(0, "height = " + height);
-  //      messageList.add(0, "xGU = " + xGU);
-  //      messageList.add(0, "yGU = " + yGU);
-  //      messageListAdapter.notifyDataSetChanged();
-
-
-
+    public void deleteDeviceList() {
+        deviceList.clear();
+        deviceListAdapter.notifyDataSetChanged();
     }
 
 
     public interface OnDeviceSelected {
-        void connect(String name);
+        void connectDeviceItem(int position);
     }
 
 

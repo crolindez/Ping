@@ -80,4 +80,15 @@ public class GameCommManager implements Runnable {
         }
     }
 
+    public void cancel() {
+        if (socket!=null) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
 }
