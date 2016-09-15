@@ -73,7 +73,7 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
         } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             mListener.addMessage("ACL CONNECTED");
-//              mListener.connect(device);
+            mListener.connectDevice(device);
 
 
         } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {

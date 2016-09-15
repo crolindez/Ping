@@ -3,7 +3,6 @@ package es.carlosrolindez.ping;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.IBluetooth;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -52,7 +51,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     private BtBroadcastReceiver mReceiver = null;
     private static boolean mBtIsBound = false;
     private Set<BluetoothDevice> mPairedDevices;
- //   private static IBluetooth iBt = null;
+//    private static IBluetooth iBt = null;
 
     private ServerSocketHandler serviceThread;
     private ClientSocketHandler clientThread;
@@ -114,7 +113,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
   //      registerReceiver(mBtReceiver, mIntentFilter);
 
 
-        searchBtPairedNames(/*context*/);
 
         launchFragment = new LaunchFragment();
         gameFragment = new GameFragment();
@@ -125,7 +123,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
 
         mReceiver = new BtBroadcastReceiver(this);
-        doDiscovery();
     }
 
     @Override
@@ -135,14 +132,22 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
+        } else {
+            registerReceiver(mReceiver, mIntentFilter);
+         //   searchBtPairedNames();
+            mPairedDevices = mBluetoothAdapter.getBondedDevices();
+            showSet(mPairedDevices);
+            doDiscovery();
         }
+
 
     }
      @Override
     protected void onResume() {
         super.onResume();
          registerReceiver(mReceiver, mIntentFilter);
-         searchBtPairedNames();
+         //searchBtPairedNames();
+         doDiscovery();
     }
     /* unregister the broadcast receiver */
     @Override
@@ -222,16 +227,21 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         return true;
     }
 
-
-    public void searchBtPairedNames(/*Context context*/) {
+/*
+    public void searchBtPairedNames() {
         Intent intent = new Intent(IBluetooth.class.getName());
 
+
+        Log.e(TAG,"search Paired Devices " + IBluetooth.class.getName());
+
         if (!mBtIsBound) {
+            Log.e(TAG,"not bound");
             if (bindService(intent, mBtServiceConnection, Context.BIND_AUTO_CREATE)) {
 
             } else {
             }
         } else {
+            Log.e(TAG,"bound");
             Intent intent2 = new Intent();
             intent2.setAction(Constants.NameFilter);
             sendBroadcast(intent2);
@@ -242,8 +252,9 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.e(TAG,"mBtServiceConnected TRUE");
             mBtIsBound = true;
- //           iBt = IBluetooth.Stub.asInterface(service);
+            iBt = IBluetooth.Stub.asInterface(service);
             Intent intent = new Intent();
             intent.setAction(Constants.NameFilter);
             sendBroadcast(intent);
@@ -251,13 +262,14 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.e(TAG,"mBtServiceConnected FALSE");
             mBtIsBound = false;
 
         }
 
     };
 
-
+*/
 
  /*   protected void peersAgain() {
         mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
@@ -360,13 +372,17 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         int index=0;
 
         for (Iterator<BluetoothDevice> it = mPairedDevices.iterator(); it.hasNext(); ) {
+            device = it.next();
+            Log.e(device.getName(),"" + position);
+
             if (index==position) {
-                device = it.next();
+
                 break;
             }
             index++;
         }
         if (index==position) {
+            Log.e(device.getName(),"" + position);
             if (device.getBondState() != BluetoothDevice.BOND_BONDED)
                 device.createBond();
             else {
@@ -387,7 +403,27 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
 
     }
+/*
+    public void closeService( ){
 
+        unregisterReceiver(mReceiver);
+        doUnbindServiceBt();
+    }
+
+    public void doUnbindServiceBt() {
+        if (mBtIsBound) {
+            try {
+                unbindService(mBtServiceConnection);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
+*/
 /*   public void changeConnectionState(boolean state) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
