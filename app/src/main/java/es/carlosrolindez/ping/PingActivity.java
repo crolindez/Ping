@@ -3,19 +3,16 @@ package es.carlosrolindez.ping;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
@@ -29,7 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-public class PingActivity extends FragmentActivity  implements LaunchFragment.OnDeviceSelected,
+public class PingActivity extends AppCompatActivity implements LaunchFragment.OnDeviceSelected,
                                                                 BtBroadcastReceiver.OnBtBroadcastInteractionListener,
                                                                 Handler.Callback {
 
@@ -76,8 +73,12 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+ //       requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
+
         setContentView(R.layout.activity_launch);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
 
         preferences = getSharedPreferences("Name", MODE_PRIVATE);
         playerName = preferences.getString("username", getResources().getString(R.string.player));
@@ -156,13 +157,13 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         registerReceiver(mReceiver, mIntentFilter);
     }
 
-    @Override
+   /* @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
+*/
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -184,7 +185,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     private void doDiscovery() {
 
         // Indicate scanning in the title
-        setProgressBarIndeterminateVisibility(true);
+   //     setProgressBarIndeterminateVisibility(true);
 
         // Request discover from BluetoothAdapter
         mBluetoothAdapter.startDiscovery();
@@ -196,7 +197,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     }
 
     public void stopDiscovery() {
-        setProgressBarIndeterminateVisibility(false);
+ //       setProgressBarIndeterminateVisibility(false);
 
         // Request discover from BluetoothAdapter
         mBluetoothAdapter.cancelDiscovery();

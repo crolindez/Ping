@@ -1,6 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
-	tools:context="es.carlosrolindez.kbfinder.MainActivity" >
+	tools:context="es.carlosrolindez.ping.PingActivity" >
 	<item
 		android:id="@+id/bt_scan"
 		android:icon="@drawable/ic_action_search"
