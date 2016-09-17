@@ -27,6 +27,7 @@ public class ClientSocketHandler extends Thread {
         this.handler = handler;
         this.mDevice = device;
 
+        Log.e(TAG,"ClientSocket created");
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(Constants.MY_UUID);
 
@@ -39,11 +40,14 @@ public class ClientSocketHandler extends Thread {
     public void run() {
 
         GameCommManager chat;
+
         // Make a connection to the BluetoothSocket
         try {
             mSocket.connect();
+            Log.e(TAG,"ClientSocket connected");
             chat = new GameCommManager(mSocket, handler);
             new Thread(chat).start();
+            Log.e(TAG,"ClientSocket GameComm start");
         } catch (IOException e) {
             // Close the socket
             try {

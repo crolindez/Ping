@@ -3,17 +3,14 @@ package es.carlosrolindez.ping;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
@@ -25,7 +22,10 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 
@@ -35,30 +35,18 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
     private static final String TAG = "PingActivity";
 
-//    public static final int SERVER_PORT = 4545;
-
-
     public static final int MESSAGE = 0x400 + 1;
     public static final int MY_HANDLE = 0x400 + 2;
 
-/*    private WifiP2pManager mManager;
-    private WifiP2pManager.Channel mChannel;
-    private BtBroadcastReceiver mReceiver = null;
-    private WifiP2pDeviceList mDeviceList;
-*/
 
     private BluetoothAdapter mBluetoothAdapter = null;
     private BtBroadcastReceiver mReceiver = null;
     private static boolean mBtIsBound = false;
-    private Set<BluetoothDevice> mPairedDevices;
-//    private static IBluetooth iBt = null;
+    private BluetoothDevice[] mPairedDevices;
+
 
     private ServerSocketHandler serviceThread;
     private ClientSocketHandler clientThread;
-
-
-
-
 
     private final IntentFilter mIntentFilter = new IntentFilter();
     private Handler handler = new Handler(this);
@@ -93,27 +81,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
             finish();
         }
 
-//        mManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
-//        mChannel = mManager.initialize(this, getMainLooper(), null);
-
-
-
-//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
-        mIntentFilter.addAction(Constants.NameFilter);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-        mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-
-  //      registerReceiver(mBtReceiver, mIntentFilter);
-
-
-
         launchFragment = new LaunchFragment();
         gameFragment = new GameFragment();
 
@@ -121,22 +88,35 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         ft.replace(R.id.frame_container, launchFragment, "services");
         ft.commit();
 
-
         mReceiver = new BtBroadcastReceiver(this);
+
+        mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+
+        //      registerReceiver(mBtReceiver, mIntentFilter);
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        Log.e(TAG,"Start");
 
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
         } else {
             registerReceiver(mReceiver, mIntentFilter);
-         //   searchBtPairedNames();
-            mPairedDevices = mBluetoothAdapter.getBondedDevices();
-            showSet(mPairedDevices);
+            Set<BluetoothDevice> set = mBluetoothAdapter.getBondedDevices();
+            if (set!=null) {
+                mPairedDevices = (BluetoothDevice[]) set.toArray();
+                Log.e(TAG,"List of devices");
+            }
+
+            showArrayDevices();
             doDiscovery();
         }
 
@@ -145,20 +125,21 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
      @Override
     protected void onResume() {
         super.onResume();
+         Log.e(TAG,"Resume - Registering receiver");
          registerReceiver(mReceiver, mIntentFilter);
-         //searchBtPairedNames();
          doDiscovery();
     }
     /* unregister the broadcast receiver */
     @Override
     protected void onPause() {
         super.onPause();
+        Log.e(TAG,"Pause - Inregistering receiver");
+
         registerReceiver(mReceiver, mIntentFilter);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -168,7 +149,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         switch (item.getItemId()) {
             case R.id.bt_scan:
-                // Launch the DeviceListActivity to see devices and do scan
                 doDiscovery();
                 return true;
             case R.id.menu_player_name:
@@ -198,9 +178,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     public void stopDiscovery() {
         setProgressBarIndeterminateVisibility(false);
 
-        // Request discover from BluetoothAdapter
         mBluetoothAdapter.cancelDiscovery();
-
         if (serviceThread!=null) serviceThread.cancel();
 
     }
@@ -227,137 +205,27 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         return true;
     }
 
-/*
-    public void searchBtPairedNames() {
-        Intent intent = new Intent(IBluetooth.class.getName());
 
-
-        Log.e(TAG,"search Paired Devices " + IBluetooth.class.getName());
-
-        if (!mBtIsBound) {
-            Log.e(TAG,"not bound");
-            if (bindService(intent, mBtServiceConnection, Context.BIND_AUTO_CREATE)) {
-
-            } else {
-            }
-        } else {
-            Log.e(TAG,"bound");
-            Intent intent2 = new Intent();
-            intent2.setAction(Constants.NameFilter);
-            sendBroadcast(intent2);
-        }
-    }
-
-    public ServiceConnection mBtServiceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.e(TAG,"mBtServiceConnected TRUE");
-            mBtIsBound = true;
-            iBt = IBluetooth.Stub.asInterface(service);
-            Intent intent = new Intent();
-            intent.setAction(Constants.NameFilter);
-            sendBroadcast(intent);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.e(TAG,"mBtServiceConnected FALSE");
-            mBtIsBound = false;
-
-        }
-
-    };
-
-*/
-
- /*   protected void peersAgain() {
-        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                addMessage("Discovery Success");
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                addMessage("Discovery failure");
-            }
-        });
-    }*/
-
-
- /*   @Override
-    public void onPeersAvailable(WifiP2pDeviceList deviceList) {
-        mDeviceList = deviceList;
-        if (launchFragment!=null) launchFragment.showList(mDeviceList);
-    }*/
-
-
-
-/*    @Override
-    public void onConnectionInfoAvailable(final WifiP2pInfo info) {
-
-        // InetAddress from WifiP2pInfo struct.
-        InetAddress groupOwnerAddress = info.groupOwnerAddress;
-        Thread thread;
-
-
-        // After the group negotiation, we can determine the group owner.
-        if (!info.groupFormed){
-            addMessage("NO Group Formed");
-            return;
-        }
-
-        ownership = info.isGroupOwner;
-
-
-        if (ownership) {
-            addMessage("Group Formed.  I am the owner");
-            thread = new ClientSocketHandler(handler);
-            thread.start();
-
-        } else {
-            addMessage("Group Formed.  I am NOT the owner");
-            thread = new ServerSocketHandler(handler, info.groupOwnerAddress);
-            thread.start();
-        }
-
-
-
-    }
-*/
-    public void showSet(Set<BluetoothDevice> pairedDevices) {
-        if (pairedDevices == null ) return;
+    public void showArrayDevices() {
+        if (mPairedDevices == null ) return;
         if (launchFragment == null ) return;
-        String currentName;
 
-        if (pairedDevices.size() > 0) {
-            if (mPairedDevices==null) {
-                try {
-                    mPairedDevices.clear();
-                } catch (UnsupportedOperationException e) {
-                    e.printStackTrace();
-                }
-            }
-            mPairedDevices = pairedDevices;
-            launchFragment.deleteDeviceList();
-            for (BluetoothDevice device : pairedDevices) {
-                currentName = device.getName();
- /*               try {
-                    currentName = iBt.getRemoteAlias(device);
-                } catch (RemoteException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }*/
-                launchFragment.addDevice(currentName);
-            }
+        launchFragment.deleteDeviceList();
+        for (BluetoothDevice device : mPairedDevices) {
+
+            launchFragment.addDevice(device.getName());
         }
     }
 
-    public void addDevice(BluetoothDevice device) {
-        if (device==null) return;
-        if (mPairedDevices.contains(device)) return;
-        mPairedDevices.add(device);
+    public void addDevice(BluetoothDevice newDevice) {
+        if (newDevice==null) return;
+        for (BluetoothDevice device:mPairedDevices) {
+            if (device.getName().equals(newDevice.getName())) return;
+        }
+        final int N = mPairedDevices.length;
+        mPairedDevices = Arrays.copyOf(mPairedDevices, N + 1);
+        mPairedDevices[N] = newDevice;
+        launchFragment.addDevice(newDevice.getName());
     }
 
     public void addMessage(String text) {
@@ -367,26 +235,14 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     public void connectDeviceItem(int position) {
 
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-        BluetoothDevice device=null;
 
-        int index=0;
 
-        for (Iterator<BluetoothDevice> it = mPairedDevices.iterator(); it.hasNext(); ) {
-            device = it.next();
-            Log.e(device.getName(),"" + position);
-
-            if (index==position) {
-
-                break;
-            }
-            index++;
-        }
-        if (index==position) {
-            Log.e(device.getName(),"" + position);
-            if (device.getBondState() != BluetoothDevice.BOND_BONDED)
-                device.createBond();
+        if (mPairedDevices.length<position) {
+            Log.e(TAG,mPairedDevices[position].getName() + " " + position);
+            if (mPairedDevices[position].getBondState() != BluetoothDevice.BOND_BONDED)
+                mPairedDevices[position].createBond();
             else {
-                connectDevice(device);
+                connectDevice(mPairedDevices[position]);
             }
         }
 
@@ -403,83 +259,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
 
     }
-/*
-    public void closeService( ){
 
-        unregisterReceiver(mReceiver);
-        doUnbindServiceBt();
-    }
-
-    public void doUnbindServiceBt() {
-        if (mBtIsBound) {
-            try {
-                unbindService(mBtServiceConnection);
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        }
-
-
-    }
-*/
-/*   public void changeConnectionState(boolean state) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-
-        ft.replace(R.id.frame_container, launchFragment, "services");
-        ft.commit();
-        peersAgain();
-    }
-*/
-
- /*   public void connect(String name) {
-
-
-
-        for (WifiP2pDevice device : mDeviceList.getDeviceList()) {
-            if (name.equals(device.deviceName)) {
-                WifiP2pConfig config = new WifiP2pConfig();
-                config.deviceAddress = device.deviceAddress;
-                mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-
-                    @Override
-                    public void onSuccess() {
-                        addMessage("Connection Success");
-                    }
-
-                    @Override
-                    public void onFailure(int reason) {
-                        addMessage("Connection Failure");
-                    }
-                });
-                break;
-            }
-
-        }
-    }
-*/
- /*   public void closeConnection(int code){
-
-        if (mManager != null && mChannel != null) {
-
-            mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
-
-                @Override
-                public void onSuccess() {
-                    addMessage("Disconnection Success");
-                }
-
-                @Override
-                public void onFailure(int reason) {
-                    addMessage("Disconnection Failure");
-                }
-            });
-
-
-        }
-    }
-*/
     public void createDialog() {
 
 

@@ -1,11 +1,7 @@
 package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -58,21 +54,20 @@ public class LaunchFragment extends Fragment {
         } */
 
         // Navigation bar hiding:  Backwards compatible to ICS.
-        if (Build.VERSION.SDK_INT >= 14) {
+ //       if (Build.VERSION.SDK_INT >= 14) {
             uiOptions &= (~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
+  //      }
 
         // Status bar hiding: Backwards compatible to Jellybean
-        if (Build.VERSION.SDK_INT >= 16) {
+  //      if (Build.VERSION.SDK_INT >= 16) {
             uiOptions &= (~View.SYSTEM_UI_FLAG_FULLSCREEN);
-        }
+  //      }
 
         if (Build.VERSION.SDK_INT >= 19) {
             uiOptions &=(~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-
 
 
         return mContentView;

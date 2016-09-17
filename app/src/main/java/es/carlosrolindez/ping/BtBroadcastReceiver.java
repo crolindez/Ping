@@ -66,10 +66,6 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
 //               ((KBfinderActivity)context).setProgressBarIndeterminateVisibility(false);
             mListener.addMessage("BT DISCOVERY FINISHED");
             mListener.stopDiscovery();
-        } else if (Constants.NameFilter.equals(action)) {
-            mListener.addMessage("BT PAIRED DEVICES");
-            mListener.showSet(getNames());
-
         } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             mListener.addMessage("ACL CONNECTED");
@@ -154,7 +150,6 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
 */
     public interface OnBtBroadcastInteractionListener {
         void addMessage(String message);
-        void showSet(Set<BluetoothDevice> pairedDevice);
         void addDevice(BluetoothDevice device);
         void stopDiscovery();
         void connectDevice(BluetoothDevice device);
