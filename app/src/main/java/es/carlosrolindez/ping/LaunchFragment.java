@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -105,14 +106,15 @@ public class LaunchFragment extends Fragment {
         messageListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, messageList);
         messageView.setAdapter(messageListAdapter);
 
-        ListView peerView = (ListView) mContentView.findViewById(R.id.devicesbt);
+        ListView deviceView = (ListView) mContentView.findViewById(R.id.devicesbt);
         deviceList = new ArrayList<>();
         deviceListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, deviceList);
-        peerView.setAdapter(deviceListAdapter);
-        peerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        deviceView.setAdapter(deviceListAdapter);
+        deviceView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-            mListener.connectDeviceItem(deviceList.size()-position-1);
+                Log.e(TAG,"Selected " + (deviceList.size()-position-1));
+                mListener.connectDeviceItem(deviceList.size()-position-1);
             }
 
         });
@@ -122,16 +124,19 @@ public class LaunchFragment extends Fragment {
 
 
     public void addMessage(String message) {
+        Log.e(TAG,message);
         messageList.add(0, message);
         messageListAdapter.notifyDataSetChanged();
     }
 
     public void addDevice(String deviceName) {
+        Log.e(TAG,deviceName);
         deviceList.add(0, deviceName);
         deviceListAdapter.notifyDataSetChanged();
     }
 
     public void deleteDeviceList() {
+        Log.e(TAG,"delete list");
         deviceList.clear();
         deviceListAdapter.notifyDataSetChanged();
     }

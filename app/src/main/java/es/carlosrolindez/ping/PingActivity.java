@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
@@ -23,9 +22,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 
@@ -33,16 +29,18 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                                                                 BtBroadcastReceiver.OnBtBroadcastInteractionListener,
                                                                 Handler.Callback {
 
-    private static final String TAG = "PingActivity";
+    private final String TAG = "PingActivity";
 
-    public static final int MESSAGE = 0x400 + 1;
-    public static final int MY_HANDLE = 0x400 + 2;
+
 
 
     private BluetoothAdapter mBluetoothAdapter = null;
     private BtBroadcastReceiver mReceiver = null;
     private static boolean mBtIsBound = false;
+
+    private final int MAX_NUM_DEVICES = 100;
     private BluetoothDevice[] mPairedDevices;
+    private int numDevices;
 
 
     private ServerSocketHandler serviceThread;
@@ -112,12 +110,13 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
             registerReceiver(mReceiver, mIntentFilter);
             Set<BluetoothDevice> set = mBluetoothAdapter.getBondedDevices();
             if (set!=null) {
-                mPairedDevices = (BluetoothDevice[]) set.toArray();
+                mPairedDevices = set.toArray(new BluetoothDevice[MAX_NUM_DEVICES]);
+                numDevices = set.size();
                 Log.e(TAG,"List of devices");
             }
 
             showArrayDevices();
-            doDiscovery();
+   //         doDiscovery();
         }
 
 
@@ -128,14 +127,16 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
          Log.e(TAG,"Resume - Registering receiver");
          registerReceiver(mReceiver, mIntentFilter);
          doDiscovery();
+         startServiceThread();
     }
     /* unregister the broadcast receiver */
     @Override
     protected void onPause() {
         super.onPause();
-        Log.e(TAG,"Pause - Inregistering receiver");
-
+        Log.e(TAG,"Pause - Unregistering receiver");
         registerReceiver(mReceiver, mIntentFilter);
+        stopDiscovery();
+        stopServiceThread();
     }
 
     @Override
@@ -165,35 +166,36 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         // Indicate scanning in the title
         setProgressBarIndeterminateVisibility(true);
-
         // Request discover from BluetoothAdapter
         mBluetoothAdapter.startDiscovery();
+    }
 
+    private void startServiceThread() {
         if (serviceThread!=null) serviceThread.cancel();
         serviceThread = new ServerSocketHandler(handler,mBluetoothAdapter);
         serviceThread.start();
-
     }
 
     public void stopDiscovery() {
         setProgressBarIndeterminateVisibility(false);
-
         mBluetoothAdapter.cancelDiscovery();
-        if (serviceThread!=null) serviceThread.cancel();
+    }
 
+    private void stopServiceThread() {
+        if (serviceThread!=null) serviceThread.cancel();
     }
 
     @Override
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
-            case MESSAGE:
+            case Constants.MESSAGE:
                 byte[] readBuf = (byte[]) msg.obj;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
                 gameFragment.pushMessage(readMessage);
                 break;
 
-            case MY_HANDLE:
+            case Constants.MY_HANDLE:
                 Object obj = msg.obj;
                 gameFragment.setGameFragment((GameCommManager) obj, ownership, playerName);
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -211,21 +213,25 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         if (launchFragment == null ) return;
 
         launchFragment.deleteDeviceList();
-        for (BluetoothDevice device : mPairedDevices) {
-
-            launchFragment.addDevice(device.getName());
+        for (int index=0; index<numDevices; index++) {
+            launchFragment.addDevice(mPairedDevices[index].getName());
+            Log.e(TAG,mPairedDevices[index].getName() + " " + index);
         }
+
     }
 
     public void addDevice(BluetoothDevice newDevice) {
         if (newDevice==null) return;
-        for (BluetoothDevice device:mPairedDevices) {
-            if (device.getName().equals(newDevice.getName())) return;
+        if ((numDevices+1)<MAX_NUM_DEVICES) {
+            for (int index=0; index<numDevices; index++) {
+                if (mPairedDevices[index].getName().equals(newDevice.getName())) return;
+            }
+            Log.e(TAG,"New " + newDevice.getName() + " " + numDevices);
+            mPairedDevices[numDevices++] = newDevice;
+
         }
-        final int N = mPairedDevices.length;
-        mPairedDevices = Arrays.copyOf(mPairedDevices, N + 1);
-        mPairedDevices[N] = newDevice;
-        launchFragment.addDevice(newDevice.getName());
+
+
     }
 
     public void addMessage(String text) {
@@ -237,13 +243,17 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
 
-        if (mPairedDevices.length<position) {
+        if (MAX_NUM_DEVICES>position) {
             Log.e(TAG,mPairedDevices[position].getName() + " " + position);
-            if (mPairedDevices[position].getBondState() != BluetoothDevice.BOND_BONDED)
+            if (mPairedDevices[position].getBondState() != BluetoothDevice.BOND_BONDED) {
+                Log.e(TAG, "Create Bond");
                 mPairedDevices[position].createBond();
-            else {
+            } else {
                 connectDevice(mPairedDevices[position]);
+                Log.e(TAG,"Connect Device");
             }
+        } else {
+            Log.e(TAG,"selected " + position + " out of " + MAX_NUM_DEVICES );
         }
 
 

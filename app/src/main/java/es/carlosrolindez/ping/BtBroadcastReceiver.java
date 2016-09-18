@@ -57,8 +57,8 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
         // When discovery finds a device
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             // Get the BluetoothDevice object from the Intent
-            mListener.addMessage("BT FOUND");
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            mListener.addMessage("BT FOUND " + device.getName());
             mListener.addDevice(device);
 
             // When discovery is finished, change the Activity title
@@ -69,7 +69,7 @@ public class BtBroadcastReceiver extends BroadcastReceiver {
         } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             mListener.addMessage("ACL CONNECTED");
-            mListener.connectDevice(device);
+          //  mListener.connectDevice(device);
 
 
         } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {

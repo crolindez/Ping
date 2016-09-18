@@ -50,6 +50,7 @@ public class ClientSocketHandler extends Thread {
             Log.e(TAG,"ClientSocket GameComm start");
         } catch (IOException e) {
             // Close the socket
+            Log.e(TAG,"ClientSocket connection failed");
             try {
                 mSocket.close();
             } catch (IOException e2) {

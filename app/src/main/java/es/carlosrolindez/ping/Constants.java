@@ -24,6 +24,9 @@ public interface Constants {
     // Key names
 
 //	public static final String NameFilter = "es.carlosrolindez.ping.NAME";
+	public static final int MESSAGE = 0x400 + 1;
+	public static final int MY_HANDLE = 0x400 + 2;
+
 	public static final String NameService = "es.carlosrolindez.ping.PING";
 
 	public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");

@@ -44,7 +44,7 @@ public class GameCommManager implements Runnable {
             // In that situation buffer was corrupted by new InputStream before being read by activity.
             // queue of 4 buffers was used to prevent that problem
 
-            handler.obtainMessage(PingActivity.MY_HANDLE, this)
+            handler.obtainMessage(Constants.MY_HANDLE, this)
                     .sendToTarget();
 
 
@@ -56,7 +56,7 @@ public class GameCommManager implements Runnable {
                         break;
                     }
                     // Send the obtained bytes to the UI Activity
-                    handler.obtainMessage(PingActivity.MESSAGE,
+                    handler.obtainMessage(Constants.MESSAGE,
                             bytes, -1, buffer[bufferNumber%4]).sendToTarget();
                     bufferNumber++;
                 } catch (IOException e) {
