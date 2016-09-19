@@ -17,11 +17,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.util.Arrays;
 import java.util.Set;
 
 
@@ -35,8 +33,8 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
 
     private BluetoothAdapter mBluetoothAdapter = null;
-    private BtBroadcastReceiver mReceiver = null;
-    private static boolean mBtIsBound = false;
+//    private BtBroadcastReceiver mReceiver = null;
+//    private static boolean mBtIsBound = false;
 
     private final int MAX_NUM_DEVICES = 100;
     private BluetoothDevice[] mPairedDevices;
@@ -46,7 +44,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     private ServerSocketHandler serviceThread;
     private ClientSocketHandler clientThread;
 
-    private final IntentFilter mIntentFilter = new IntentFilter();
+ //   private final IntentFilter mIntentFilter = new IntentFilter();
     private Handler handler = new Handler(this);
 
     private LaunchFragment launchFragment;
@@ -62,7 +60,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+ //       requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_launch);
 
         preferences = getSharedPreferences("Name", MODE_PRIVATE);
@@ -86,15 +84,14 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         ft.replace(R.id.frame_container, launchFragment, "services");
         ft.commit();
 
-        mReceiver = new BtBroadcastReceiver(this);
+ //       mReceiver = new BtBroadcastReceiver(this);
 
-        mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-        mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+ //       mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+//        mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+//        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+//        mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+//        mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
 
-        //      registerReceiver(mBtReceiver, mIntentFilter);
 
     }
 
@@ -107,7 +104,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
         } else {
-            registerReceiver(mReceiver, mIntentFilter);
+ //           registerReceiver(mReceiver, mIntentFilter);
             Set<BluetoothDevice> set = mBluetoothAdapter.getBondedDevices();
             if (set!=null) {
                 mPairedDevices = set.toArray(new BluetoothDevice[MAX_NUM_DEVICES]);
@@ -125,8 +122,8 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     protected void onResume() {
         super.onResume();
          Log.e(TAG,"Resume - Registering receiver");
-         registerReceiver(mReceiver, mIntentFilter);
-         doDiscovery();
+ //        registerReceiver(mReceiver, mIntentFilter);
+//         doDiscovery();
          startServiceThread();
     }
     /* unregister the broadcast receiver */
@@ -134,10 +131,11 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     protected void onPause() {
         super.onPause();
         Log.e(TAG,"Pause - Unregistering receiver");
-        registerReceiver(mReceiver, mIntentFilter);
-        stopDiscovery();
+ //       unregisterReceiver(mReceiver);
+ //       stopDiscovery();
         stopServiceThread();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -150,7 +148,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         switch (item.getItemId()) {
             case R.id.bt_scan:
-                doDiscovery();
+ //               doDiscovery();
                 return true;
             case R.id.menu_player_name:
                 createDialog();
@@ -162,31 +160,34 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     /**
      * Start device discover with the BluetoothAdapter
      */
-    private void doDiscovery() {
+ /*   private void doDiscovery() {
 
         // Indicate scanning in the title
         setProgressBarIndeterminateVisibility(true);
         // Request discover from BluetoothAdapter
         mBluetoothAdapter.startDiscovery();
     }
-
+*/
     private void startServiceThread() {
         if (serviceThread!=null) serviceThread.cancel();
         serviceThread = new ServerSocketHandler(handler,mBluetoothAdapter);
         serviceThread.start();
+        ownership = false;
     }
-
+/*
     public void stopDiscovery() {
         setProgressBarIndeterminateVisibility(false);
         mBluetoothAdapter.cancelDiscovery();
     }
-
+*/
     private void stopServiceThread() {
         if (serviceThread!=null) serviceThread.cancel();
+        ownership = false;
     }
 
     @Override
     public boolean handleMessage(Message msg) {
+        FragmentTransaction ft;
         switch (msg.what) {
             case Constants.MESSAGE:
                 byte[] readBuf = (byte[]) msg.obj;
@@ -195,10 +196,16 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                 gameFragment.pushMessage(readMessage);
                 break;
 
+            case Constants.MY_CLOSE:
+                ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.frame_container, launchFragment, "services");
+                ft.commit();
+                break;
+
             case Constants.MY_HANDLE:
                 Object obj = msg.obj;
                 gameFragment.setGameFragment((GameCommManager) obj, ownership, playerName);
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.frame_container, gameFragment, "game");
                 ft.commit();
                 break;
@@ -215,7 +222,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         launchFragment.deleteDeviceList();
         for (int index=0; index<numDevices; index++) {
             launchFragment.addDevice(mPairedDevices[index].getName());
-            Log.e(TAG,mPairedDevices[index].getName() + " " + index);
+  //          Log.e(TAG,mPairedDevices[index].getName() + " " + index);
         }
 
     }
@@ -245,13 +252,13 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         if (MAX_NUM_DEVICES>position) {
             Log.e(TAG,mPairedDevices[position].getName() + " " + position);
-            if (mPairedDevices[position].getBondState() != BluetoothDevice.BOND_BONDED) {
+ /*           if (mPairedDevices[position].getBondState() != BluetoothDevice.BOND_BONDED) {
                 Log.e(TAG, "Create Bond");
                 mPairedDevices[position].createBond();
-            } else {
+            } else {*/
                 connectDevice(mPairedDevices[position]);
                 Log.e(TAG,"Connect Device");
-            }
+  //          }
         } else {
             Log.e(TAG,"selected " + position + " out of " + MAX_NUM_DEVICES );
         }
@@ -261,12 +268,12 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
     public void connectDevice(BluetoothDevice device) {
 
-        stopDiscovery();
+//        stopDiscovery();
 
         if (clientThread!=null) clientThread.cancel();
         clientThread = new ClientSocketHandler(handler,device);
         clientThread.start();
-
+        ownership = true;
 
     }
 

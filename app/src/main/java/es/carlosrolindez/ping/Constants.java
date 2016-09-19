@@ -26,6 +26,7 @@ public interface Constants {
 //	public static final String NameFilter = "es.carlosrolindez.ping.NAME";
 	public static final int MESSAGE = 0x400 + 1;
 	public static final int MY_HANDLE = 0x400 + 2;
+	public static final int MY_CLOSE = 0x400 + 3;
 
 	public static final String NameService = "es.carlosrolindez.ping.PING";
 

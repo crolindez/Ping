@@ -3,6 +3,7 @@ package es.carlosrolindez.ping;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +61,10 @@ public class GameCommManager implements Runnable {
                             bytes, -1, buffer[bufferNumber%4]).sendToTarget();
                     bufferNumber++;
                 } catch (IOException e) {
+                    Log.e(TAG,"socket failed");
+                    handler.obtainMessage(Constants.MY_CLOSE, this)
+                            .sendToTarget();
+                    return;
                 }
             }
         } catch (IOException e) {
@@ -81,6 +86,7 @@ public class GameCommManager implements Runnable {
     }
 
     public void cancel() {
+        Log.e(TAG,"Socket closed");
         if (socket!=null) {
             try {
                 socket.close();
