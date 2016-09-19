@@ -86,10 +86,13 @@ public class GameCommManager implements Runnable {
     }
 
     public void cancel() {
-        Log.e(TAG,"Socket closed");
+
         if (socket!=null) {
             try {
                 socket.close();
+                Log.e(TAG,"Socket closed");
+                handler.obtainMessage(Constants.MY_CLOSE, this)
+                        .sendToTarget();
             } catch (IOException e) {
                 e.printStackTrace();
             }

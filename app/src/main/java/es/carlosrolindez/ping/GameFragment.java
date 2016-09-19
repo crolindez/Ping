@@ -290,7 +290,7 @@ public class GameFragment extends Fragment {
                 if (owner) {
                     pingGame.setState(PingGameClass.PLAYING);
                     message = BALL + pingGame.ballMessage();
-                    gameManager.write(message);
+                    if (gameManager!=null) gameManager.write(message);
                 }
 
                 gameTimer= System.currentTimeMillis();
@@ -308,7 +308,7 @@ public class GameFragment extends Fragment {
                                     switch (event) {
                                         case PingGameClass.BOUNCE_PLAYER:
                                             message = BALL + pingGame.ballMessage();
-                                            gameManager.write(message);
+                                            if (gameManager!=null) gameManager.write(message);
                                             tg.startTone(ToneGenerator.TONE_DTMF_8, 50);
                                             break;
                                         case PingGameClass.BOUNCE_WALL:
@@ -316,7 +316,7 @@ public class GameFragment extends Fragment {
                                             break;
                                         case PingGameClass.GOAL_MOVEMENT:
                                             message = GOAL + " ";
-                                            gameManager.write(message);
+                                            if (gameManager!=null) gameManager.write(message);
                                             pingGame.setState(PingGameClass.GETTING_READY);
                                             tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
                                             break;
@@ -333,7 +333,7 @@ public class GameFragment extends Fragment {
                             e.printStackTrace();
                         }
                         message = BALL + pingGame.ballMessage();
-                        gameManager.write(message);
+                        if (gameManager!=null) gameManager.write(message);
                         gameTimer= System.currentTimeMillis();
                         pingGame.setState(PingGameClass.PLAYING);
                     } else if  ( (pingGame.getState() == PingGameClass.GOAL) ||(pingGame.getState() == PingGameClass.START) ) {

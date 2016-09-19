@@ -46,30 +46,15 @@ public class LaunchFragment extends Fragment {
         // The UI options currently enabled are represented by a bitfield.
         // getSystemUiVisibility() gives us that bitfield.
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
-    /*    boolean isImmersiveModeEnabled =
-                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
-        if (isImmersiveModeEnabled) {
-            Log.e(TAG, "Turning immersive mode mode off. ");
-        } else {
-            Log.e(TAG, "Turning immersive mode mode on.");
-        } */
 
-        // Navigation bar hiding:  Backwards compatible to ICS.
- //       if (Build.VERSION.SDK_INT >= 14) {
-            uiOptions &= (~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-  //      }
-
-        // Status bar hiding: Backwards compatible to Jellybean
-  //      if (Build.VERSION.SDK_INT >= 16) {
-            uiOptions &= (~View.SYSTEM_UI_FLAG_FULLSCREEN);
-  //      }
+        uiOptions &= (~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        uiOptions &= (~View.SYSTEM_UI_FLAG_FULLSCREEN);
 
         if (Build.VERSION.SDK_INT >= 19) {
             uiOptions &=(~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-
 
         return mContentView;
     }
@@ -89,7 +74,7 @@ public class LaunchFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
+        Log.e(TAG,"Start Launch Fragment");
     }
 
     @Override
