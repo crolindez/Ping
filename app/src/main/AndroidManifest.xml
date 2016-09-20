@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="es.carlosrolindez.ping">
 
-    android:versionCode="0.2"
+    android:versionCode="2.0"
     android:versionName="Julia" >
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>

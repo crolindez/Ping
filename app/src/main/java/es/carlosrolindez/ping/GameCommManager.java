@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
  * Handles reading and writing of messages with socket buffers. Uses a Handler
  * to post messages to UI thread for UI updates.
  */
-public class GameCommManager implements Runnable {
+class GameCommManager implements Runnable {
 
     private boolean ownership = false;
 

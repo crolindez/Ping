@@ -38,7 +38,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 //    private ClientSocketHandler clientThread;
     private GameCommManager gameRunnable;
 
-    private Handler handler = new Handler(this);
+    private final Handler handler = new Handler(this);
 
     private LaunchFragment launchFragment;
     private GameFragment gameFragment;
@@ -194,7 +194,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     }
 
 
-    public void showArrayDevices() {
+    private void showArrayDevices() {
         if (mPairedDevices == null ) return;
         if (launchFragment == null ) return;
 
@@ -224,14 +224,14 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         }
     }
 
-    public void connectDevice(BluetoothDevice device) {
+    private void connectDevice(BluetoothDevice device) {
 
 //        closeConnection();
         new ClientSocketHandler(handler,device).start();
 
     }
 
-    public void createDialog() {
+    private void createDialog() {
 
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -243,7 +243,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        if (nameText == null) Log.e(TAG, "EditText empty");
                         Editable editable = nameText.getText();
                         if (editable == null) Log.e(TAG, "editable empty");
                         playerName = nameText.getText().toString();

@@ -77,9 +77,9 @@ public class GameFragment extends Fragment {
             uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
  //       }
 
- //       if (Build.VERSION.SDK_INT >= 19) {
+        if (Build.VERSION.SDK_INT >= 19) {
             uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
- //       }
+        }
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
@@ -263,7 +263,7 @@ public class GameFragment extends Fragment {
 
     public class GameRunnable implements Runnable {
 
-        boolean owner;
+        final boolean owner;
         long gameTimer;
 
         GameRunnable(boolean owner) {

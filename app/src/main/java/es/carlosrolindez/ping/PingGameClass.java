@@ -7,7 +7,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 
-public class PingGameClass {
+class PingGameClass {
     private static final String TAG = "PingGameClass";
 
     // PING GAME STATES
@@ -49,10 +49,10 @@ public class PingGameClass {
     private static final int INIT_Y_BOTTOM_BAR = 99;
 
     private static final float MIN_LIMIT_Y_BALL = INIT_Y_TOP_BAR + (SIZE_BALL + HEIGHT_BAR) / 2.0f;
-    private static final float MAX_LIMIT_Y_BALL = INIT_Y_BOTTOM_BAR - (SIZE_BALL + HEIGHT_BAR) / 2.0f;;
+    private static final float MAX_LIMIT_Y_BALL = INIT_Y_BOTTOM_BAR - (SIZE_BALL + HEIGHT_BAR) / 2.0f;
 
     private static final float MIN_LIMIT_X_BALL = INIT_X_PLAYER_LEFT  + (SIZE_BALL + WIDTH_PLAYER) / 2.0f;
-    private static final float MAX_LIMIT_X_BALL = INIT_X_PLAYER_RIGHT - (SIZE_BALL + WIDTH_PLAYER) / 2.0f;;
+    private static final float MAX_LIMIT_X_BALL = INIT_X_PLAYER_RIGHT - (SIZE_BALL + WIDTH_PLAYER) / 2.0f;
 
     private static final float MIN_LIMIT_Y_PLAYER = INIT_Y_TOP_BAR + (HEIGHT_PLAYER + HEIGHT_BAR) / 2.0f;
     private static final float MAX_LIMIT_Y_PLAYER = INIT_Y_BOTTOM_BAR - (HEIGHT_PLAYER + HEIGHT_BAR) / 2.0f;
@@ -63,14 +63,14 @@ public class PingGameClass {
     private int leftScore, rightScore;
 
     // Entities
-    private PositionClass mPlayerLeft;
-    private PositionClass mPlayerRight;
-    private PositionClass mBall;
-    private PositionClass mTopBar;
-    private PositionClass mBottomBar;
+    private final PositionClass mPlayerLeft;
+    private final PositionClass mPlayerRight;
+    private final PositionClass mBall;
+    private final PositionClass mTopBar;
+    private final PositionClass mBottomBar;
 
-    private TextView mLeftScoreText;
-    private TextView mRightScoreText;
+    private final TextView mLeftScoreText;
+    private final TextView mRightScoreText;
 
     // Windows constants
     private static int width, height;
@@ -211,8 +211,8 @@ public class PingGameClass {
     private class PositionClass {
 
         private float xPosition, yPosition, xDelta, yDelta, xSize, ySize;
-        private ImageView mView;
-        private int entity;
+        private final ImageView mView;
+        private final int entity;
         private float nextX, nextY;
 
         PositionClass(ImageView view, int entity){

@@ -9,12 +9,10 @@ import android.util.Log;
 
 import java.io.IOException;
 
-public class ServerSocketHandler extends Thread {
+class ServerSocketHandler extends Thread {
 
     private static final String TAG = "ServerSocketHandler";
-    private BluetoothAdapter mBluetoothAdapter = null;
-    private Handler mHandler;
-    private GameCommManager chat;
+    private final Handler mHandler;
 
     private final BluetoothServerSocket mmServerSocket;
 
@@ -32,9 +30,10 @@ public class ServerSocketHandler extends Thread {
     }
 
     public void run() {
+        GameCommManager chat;
         Log.e(TAG,"ServerSocket run");
         if (mmServerSocket==null) return;
-        BluetoothSocket socket = null;
+        BluetoothSocket socket;
         Log.e(TAG,"ServerSocket next step");
         // Keep listening until exception occurs or a socket is returned
  //       while (true) {

@@ -7,29 +7,26 @@ import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 
 /**
  * The implementation of a ServerSocket handler. This is used by the wifi p2p
  * group owner.
  */
-public class ClientSocketHandler extends Thread {
+class ClientSocketHandler extends Thread {
 
     private static final String TAG = "ClientSocketHandler";
-    private Handler handler;
+    private final Handler handler;
     private BluetoothSocket mSocket;
-    private BluetoothDevice mDevice;
 
 
 
     public ClientSocketHandler(Handler handler, BluetoothDevice device ) {
 
         this.handler = handler;
-        this.mDevice = device;
 
         Log.e(TAG,"ClientSocket created");
         try {
-            mSocket = mDevice.createRfcommSocketToServiceRecord(Constants.MY_UUID);
+            mSocket = device.createRfcommSocketToServiceRecord(Constants.MY_UUID);
 
         } catch (IOException e) {
             e.printStackTrace();

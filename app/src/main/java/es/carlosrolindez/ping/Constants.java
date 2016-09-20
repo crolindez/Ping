@@ -18,7 +18,7 @@ package es.carlosrolindez.ping;
 
 import java.util.UUID;
 
-public interface Constants {
+class Constants {
 
 
     // Key names
