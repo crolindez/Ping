@@ -4,7 +4,6 @@ package es.carlosrolindez.ping;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -24,7 +23,6 @@ class ClientSocketHandler extends Thread {
 
         this.handler = handler;
 
-        Log.e(TAG,"ClientSocket created");
         try {
             mSocket = device.createRfcommSocketToServiceRecord(Constants.MY_UUID);
 
@@ -41,13 +39,10 @@ class ClientSocketHandler extends Thread {
         // Make a connection to the BluetoothSocket
         try {
             mSocket.connect();
-            Log.e(TAG,"ClientSocket connected");
             chat = new GameCommManager(mSocket, handler, true);
             new Thread(chat).start();
-            Log.e(TAG,"ClientSocket GameComm start");
         } catch (IOException e) {
             // Close the socket
-            Log.e(TAG,"ClientSocket connection failed");
             try {
                 mSocket.close();
             } catch (IOException e2) {
@@ -57,15 +52,6 @@ class ClientSocketHandler extends Thread {
         }
 
     }
-
- /*   public void cancel() {
-        try {
-            mSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
-
 
 
 }

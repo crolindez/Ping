@@ -20,10 +20,6 @@ import java.util.UUID;
 
 class Constants {
 
-
-    // Key names
-
-//	public static final String NameFilter = "es.carlosrolindez.ping.NAME";
 	public static final int MESSAGE = 0x400 + 1;
 	public static final int MY_HANDLE = 0x400 + 2;
 	public static final int MY_CLOSE = 0x400 + 3;
@@ -32,9 +28,8 @@ class Constants {
 
 	public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-	
     // Intent request codes
 	public static final int REQUEST_ENABLE_BT = 1;
-	
+
 
 }

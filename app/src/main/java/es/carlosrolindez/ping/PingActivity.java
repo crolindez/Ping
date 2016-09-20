@@ -12,7 +12,6 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -81,8 +80,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     @Override
     public void onStart() {
         super.onStart();
-        Log.e(TAG,"Start");
-
 
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -102,7 +99,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     protected void onResume() {
         super.onResume();
         paused = false;
-         Log.e(TAG,"Resume");
          showArrayDevices();
          startServiceThread();
     }
@@ -111,7 +107,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     protected void onPause() {
         super.onPause();
         paused = true;
-        Log.e(TAG,"Pause");
         closeConnection();
     }
 
@@ -134,15 +129,12 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     }
 
     private void startServiceThread() {
-        Log.e(TAG,"Starting Service Thread");
         if (serviceThread!=null) {
             serviceThread.cancel();
             serviceThread = null;
         }
         serviceThread = new ServerSocketHandler(handler,mBluetoothAdapter);
-        Log.e(TAG,"New Service Thread");
         serviceThread.start();
-        Log.e(TAG,"Service Thread started");
     }
 
     public void closeConnection() {
@@ -171,7 +163,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                     ft = getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.frame_container, launchFragment, "services");
                     ft.commit();
-                    Log.e(TAG, "moving to launch frame");
                     showArrayDevices();
                     startServiceThread();
                 }
@@ -216,11 +207,8 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
 
         if (MAX_NUM_DEVICES>position) {
-            Log.e(TAG,mPairedDevices[position].getName() + " " + position);
             connectDevice(mPairedDevices[position]);
-            Log.e(TAG,"Connect Device");
         } else {
-            Log.e(TAG,"selected " + position + " out of " + MAX_NUM_DEVICES );
         }
     }
 
@@ -244,7 +232,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Editable editable = nameText.getText();
-                        if (editable == null) Log.e(TAG, "editable empty");
                         playerName = nameText.getText().toString();
                         if (playerName.isEmpty())
                             playerName = getResources().getString(R.string.player);

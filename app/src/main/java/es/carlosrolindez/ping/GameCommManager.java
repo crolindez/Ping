@@ -3,7 +3,6 @@ package es.carlosrolindez.ping;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,13 +27,11 @@ class GameCommManager implements Runnable {
         this.socket = socket;
         this.handler = handler;
         this.ownership = ownership;
-        Log.e(TAG,"constructor");
     }
 
     @Override
     public void run() {
         try {
-            Log.e(TAG,"run");
 
             iStream = socket.getInputStream();
             oStream = socket.getOutputStream();
@@ -62,14 +59,12 @@ class GameCommManager implements Runnable {
                             bytes, -1, buffer[bufferNumber%4]).sendToTarget();
                     bufferNumber++;
                 } catch (IOException e) {
-                    Log.e(TAG,"read socket failed");
                     handler.obtainMessage(Constants.MY_CLOSE, this)
                             .sendToTarget();
                     return;
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG,"connecting socket failed");
             e.printStackTrace();
         } finally {
             try {
@@ -84,7 +79,6 @@ class GameCommManager implements Runnable {
         try {
             oStream.write(buffer.getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
-            Log.e(TAG,"write socket failed");
             handler.obtainMessage(Constants.MY_CLOSE, this)
                     .sendToTarget();
         }
@@ -99,7 +93,6 @@ class GameCommManager implements Runnable {
         if (socket!=null) {
             try {
                 socket.close();
-                Log.e(TAG,"Socket closed externally");
                 handler.obtainMessage(Constants.MY_CLOSE, this)
                         .sendToTarget();
             } catch (IOException e) {
