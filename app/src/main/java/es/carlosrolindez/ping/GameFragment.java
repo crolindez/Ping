@@ -22,7 +22,6 @@ public class GameFragment extends Fragment {
 
     private static final String TAG = "GameFragment";
 
-    private boolean connectionOwner;
     private String playerName;
     private TextView playerRightText;
 
@@ -47,14 +46,14 @@ public class GameFragment extends Fragment {
     private Runnable actionUp;
     private Runnable actionDown;
 
-    public GameFragment() {
-        connectionOwner = false;
-    }
+    private OnGameFragmentInteractionListener mListener;
 
-    public void setGameFragment(GameCommManager manager, boolean ownership, String name) {
-        connectionOwner = ownership;
+
+    public void setGameFragment(GameCommManager manager, String name, OnGameFragmentInteractionListener listener) {
+
         gameManager = manager;
         playerName = name;
+        mListener = listener;
     }
 
 
@@ -122,7 +121,7 @@ public class GameFragment extends Fragment {
         });
 
 
-        if (!connectionOwner) {
+        if (!gameManager.getOwnership()) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -203,15 +202,15 @@ public class GameFragment extends Fragment {
         return mContentView;
     }
 
-
+/*
     @Override
     public void onDetach() {
         super.onDetach();
-        gameManager.cancel();
+        mListener.closeConnection();
         pingGame.setState(PingGameClass.END);
     }
 
-
+*/
     public void pushMessage(String mes) {
         String arg[] = mes.split(" ");
         int index = 0;
@@ -220,7 +219,7 @@ public class GameFragment extends Fragment {
             if ((arg[index].equals(INIT)) && ((arg.length - index) >= 2)) {
                 playerRightText.setText(arg[index + 1]);
                 index++;
-                if (connectionOwner) {
+                if (gameManager.getOwnership()) {
                     message = INIT + " " + playerName;
                     gameManager.write(message);
                     new Thread(new GameRunnable(true)).start();
@@ -250,17 +249,16 @@ public class GameFragment extends Fragment {
         }
     }
 
-/*    public interface OnGameFragmentInteractionListener {
-        void closeConnection(int code);
+    public interface OnGameFragmentInteractionListener {
+        void closeConnection();
 
-    }*/
+    }
 
     @Override
     public void onPause() {
         super.onPause();
-        gameManager.cancel();
+        mListener.closeConnection();
         pingGame.setState(PingGameClass.END);
-
     }
 
     public class GameRunnable implements Runnable {

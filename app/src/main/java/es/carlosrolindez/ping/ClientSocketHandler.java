@@ -45,7 +45,7 @@ public class ClientSocketHandler extends Thread {
         try {
             mSocket.connect();
             Log.e(TAG,"ClientSocket connected");
-            chat = new GameCommManager(mSocket, handler);
+            chat = new GameCommManager(mSocket, handler, true);
             new Thread(chat).start();
             Log.e(TAG,"ClientSocket GameComm start");
         } catch (IOException e) {
@@ -61,13 +61,13 @@ public class ClientSocketHandler extends Thread {
 
     }
 
-    public void cancel() {
+ /*   public void cancel() {
         try {
             mSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
 
 

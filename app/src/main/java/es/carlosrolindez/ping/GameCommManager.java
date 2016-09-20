@@ -16,9 +16,7 @@ import java.nio.charset.Charset;
  */
 public class GameCommManager implements Runnable {
 
-    private OutputStream mmOutStream;
-    private boolean paused;
-    public boolean closeThread;
+    private boolean ownership = false;
 
     private static final String TAG = "GameCommManager";
     private InputStream iStream;
@@ -26,14 +24,17 @@ public class GameCommManager implements Runnable {
     private BluetoothSocket socket = null;
     private Handler handler;
 
-    public GameCommManager(BluetoothSocket socket, Handler handler) {
+    public GameCommManager(BluetoothSocket socket, Handler handler, boolean ownership) {
         this.socket = socket;
         this.handler = handler;
+        this.ownership = ownership;
+        Log.e(TAG,"constructor");
     }
 
     @Override
     public void run() {
         try {
+            Log.e(TAG,"run");
 
             iStream = socket.getInputStream();
             oStream = socket.getOutputStream();
@@ -61,13 +62,14 @@ public class GameCommManager implements Runnable {
                             bytes, -1, buffer[bufferNumber%4]).sendToTarget();
                     bufferNumber++;
                 } catch (IOException e) {
-                    Log.e(TAG,"socket failed");
+                    Log.e(TAG,"read socket failed");
                     handler.obtainMessage(Constants.MY_CLOSE, this)
                             .sendToTarget();
                     return;
                 }
             }
         } catch (IOException e) {
+            Log.e(TAG,"connecting socket failed");
             e.printStackTrace();
         } finally {
             try {
@@ -82,7 +84,14 @@ public class GameCommManager implements Runnable {
         try {
             oStream.write(buffer.getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
+            Log.e(TAG,"write socket failed");
+            handler.obtainMessage(Constants.MY_CLOSE, this)
+                    .sendToTarget();
         }
+    }
+
+    public boolean getOwnership() {
+        return ownership;
     }
 
     public void cancel() {
@@ -90,7 +99,7 @@ public class GameCommManager implements Runnable {
         if (socket!=null) {
             try {
                 socket.close();
-                Log.e(TAG,"Socket closed");
+                Log.e(TAG,"Socket closed externally");
                 handler.obtainMessage(Constants.MY_CLOSE, this)
                         .sendToTarget();
             } catch (IOException e) {

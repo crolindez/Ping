@@ -37,19 +37,19 @@ public class ServerSocketHandler extends Thread {
         BluetoothSocket socket = null;
         Log.e(TAG,"ServerSocket next step");
         // Keep listening until exception occurs or a socket is returned
-        while (true) {
+ //       while (true) {
             try {
                 socket = mmServerSocket.accept();
                 Log.e(TAG,"ServerSocket accepted");
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e(TAG,"ServerSocket rejected");
-                break;
+                return;
             }
             // If a connection was accepted
             if (socket != null) {
                 // Do work to manage the connection (in a separate thread)
-                chat = new GameCommManager(socket, mHandler);
+                chat = new GameCommManager(socket, mHandler, false);
                 Log.e(TAG,"GameCommManager created");
                 new Thread(chat).start();
                 try {
@@ -57,10 +57,10 @@ public class ServerSocketHandler extends Thread {
                     Log.e(TAG,"ServerSocket closed after GameCommManager");
                 } catch (IOException e) {
                     e.printStackTrace();
-                    break;
-                } break;
+                }
+ //               break;
             }
-        }
+ //       }
     }
 
     /** Will cancel the listening socket, and cause the thread to finish */
