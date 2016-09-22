@@ -5,6 +5,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Locale;
+import java.util.Random;
 
 
 class PingGameClass {
@@ -214,6 +215,7 @@ class PingGameClass {
         private final ImageView mView;
         private final int entity;
         private float nextX, nextY;
+        private final Random rand = new Random();
 
         PositionClass(ImageView view, int entity){
             xPosition = 0;
@@ -351,21 +353,26 @@ class PingGameClass {
                 } else if ((playerYposition-(HEIGHT_PLAYER/4)-(SIZE_BALL/2)) >= yPosition)  { // Up area
                     if (yDelta > 0) {
                         yDelta /= 2;
+                        yDelta += randomDelta();
                     }
                     else {
                         yDelta *= 2;
-                        if (yDelta > (3 * BALL_GPF))
-                            yDelta = 3 * BALL_GPF;
+                        yDelta += randomDelta();
+                        if (yDelta < (-3 * BALL_GPF))
+                            yDelta = -3 * BALL_GPF;
                     }
                 } else if ((playerYposition+(HEIGHT_PLAYER/4)+(SIZE_BALL/2)) > yPosition) { // Middle area
+                    yDelta += randomDelta();
                 } else if ((playerYposition+(HEIGHT_PLAYER/2)+(SIZE_BALL/2)) > yPosition) { // Lower area
                     if (yDelta > 0) {
                         yDelta *= 2;
+                        yDelta += randomDelta();
                         if (yDelta > (3 * BALL_GPF))
                             yDelta = 3 * BALL_GPF;
                     }
                     else {
                         yDelta /= 2;
+                        yDelta += randomDelta();
                     }
                 } else {
                     nextX = xPosition + xDelta;
@@ -385,6 +392,11 @@ class PingGameClass {
             }
         }
 
+        private double randomDelta() {
+            return 0.3f * rand.nextGaussian();
+        }
     }
+
+
 
 }

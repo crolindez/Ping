@@ -1,5 +1,6 @@
 package es.carlosrolindez.ping;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -76,6 +77,21 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         ft.commit();
 
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case Constants.REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode != Activity.RESULT_OK) {
+                    Toast.makeText(this, R.string.bt_not_enabled,Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                break;
+        }
+    }
+
 
     @Override
     public void onStart() {
