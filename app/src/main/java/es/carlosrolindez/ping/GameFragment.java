@@ -67,9 +67,10 @@ public class GameFragment extends Fragment {
 
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
 
-
         uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        if (Build.VERSION.SDK_INT >= 16) {
+            uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
 
         if (Build.VERSION.SDK_INT >= 19) {
             uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
