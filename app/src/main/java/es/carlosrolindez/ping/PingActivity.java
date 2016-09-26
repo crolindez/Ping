@@ -7,6 +7,10 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import org.jsoup.Jsoup;
 
 import java.util.Set;
 
@@ -68,6 +74,8 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
             Toast.makeText(this, getString(R.string.bt_not_available), Toast.LENGTH_LONG).show();
             finish();
         }
+
+        new GetVersionCode().execute();
 
         launchFragment = new LaunchFragment();
         gameFragment = new GameFragment();
@@ -232,7 +240,52 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
 //        closeConnection();
         new ClientSocketHandler(handler,device).start();
+    }
 
+
+    private class GetVersionCode extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... voids) {
+
+            String newVersion = null;
+            try {
+                newVersion = Jsoup.connect("https://play.google.com/store/apps/details?id=" + PingActivity.this.getPackageName() + "&hl=it")
+                        .timeout(30000)
+                        .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+                        .referrer("http://www.google.com")
+                        .get()
+                        .select("div[itemprop=softwareVersion]")
+                        .first()
+                        .ownText();
+                return newVersion;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String onlineVersion) {
+            super.onPostExecute(onlineVersion);
+
+            String currentVersion = null;
+
+            PackageInfo pInfo = null;
+            try {
+                pInfo =PingActivity.this.getPackageManager().getPackageInfo(getPackageName(), 0);
+                currentVersion = pInfo.versionName;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+
+
+            if (onlineVersion != null && currentVersion != null && !onlineVersion.equals(currentVersion)) {
+                Intent i = new Intent(android.content.Intent.ACTION_VIEW);
+                Toast.makeText(PingActivity.this, getResources().getString(R.string.there_is_an_update), Toast.LENGTH_SHORT).show();
+                i.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + PingActivity.this.getPackageName()));
+                startActivity(i);
+            }
+
+        }
     }
 
     private void createDialog() {
