@@ -5,32 +5,51 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-
 
 
 public class LaunchFragment extends Fragment {
 
     private static final String TAG = "LaunchFragment";
 
-    private OnDeviceSelected mListener;
+    private EditText name;
+    private Button easyButton;
+    private Button mediumButton;
+    private Button hardButton;
+    private Button expertButton;
 
-    private ArrayAdapter<String> messageListAdapter = null;
-    private ArrayList<String> messageList;
-    private ArrayAdapter<String> deviceListAdapter = null;
-    private ArrayList<String> deviceList;
+    private String playerName;
 
-    private View mContentView = null;
+    private OnLaunchUpdate mListener;
 
     public LaunchFragment() {
         // Required empty public constructor
+    }
+
+    public void setLaunchFragment(String name) {
+        playerName = name;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnLaunchUpdate) {
+            mListener = (OnLaunchUpdate) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnLaunchUpdate");
+        }
     }
 
 
@@ -38,7 +57,7 @@ public class LaunchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
+        View mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.show();
 
@@ -47,84 +66,79 @@ public class LaunchFragment extends Fragment {
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
 
         uiOptions &= (~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        uiOptions &= (~View.SYSTEM_UI_FLAG_FULLSCREEN);
-
+        if (Build.VERSION.SDK_INT >= 16) {
+            uiOptions &= (~View.SYSTEM_UI_FLAG_FULLSCREEN);
+        }
         if (Build.VERSION.SDK_INT >= 19) {
             uiOptions &=(~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
+        name = (EditText) mContentView.findViewById(R.id.player_name);
+        name.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                mListener.savePlayerName(name.getText().toString());
+            }
+        });
+
+        easyButton = (Button) mContentView.findViewById(R.id.button_easy);
+        easyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.startSelection(Constants.LEVEL_EASY);
+            }
+        });
+        mediumButton = (Button) mContentView.findViewById(R.id.button_medium);
+        mediumButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.startSelection(Constants.LEVEL_MEDIUM);
+            }
+        });
+        hardButton = (Button) mContentView.findViewById(R.id.button_hard);
+        hardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.startSelection(Constants.LEVEL_HARD);
+            }
+        });
+        expertButton = (Button) mContentView.findViewById(R.id.button_expert);
+        expertButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.startSelection(Constants.LEVEL_EXPERT);
+            }
+        });
+
         return mContentView;
     }
 
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnDeviceSelected) {
-            mListener = (OnDeviceSelected) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnDeviceSelected");
-        }
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ListView messageView = (ListView) mContentView.findViewById(R.id.messages);
-        messageList = new ArrayList<>();
-        messageListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, messageList);
-        messageView.setAdapter(messageListAdapter);
-
-        ListView deviceView = (ListView) mContentView.findViewById(R.id.devicesbt);
-        deviceList = new ArrayList<>();
-        deviceListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, deviceList);
-        deviceView.setAdapter(deviceListAdapter);
-        deviceView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-                mListener.connectDeviceItem(deviceList.size()-position-1);
-            }
-
-        });
 
     }
 
 
-
-    public void addMessage(String message) {
-        messageList.add(0, message);
-        messageListAdapter.notifyDataSetChanged();
+    public interface OnLaunchUpdate {
+        void savePlayerName(String name);
+        void startSelection(int level);
     }
-
-    public void addDevice(String deviceName) {
-        deviceList.add(0, deviceName);
-        deviceListAdapter.notifyDataSetChanged();
-    }
-
-    public void deleteDeviceList() {
-        deviceList.clear();
-        deviceListAdapter.notifyDataSetChanged();
-    }
-
-
-    public interface OnDeviceSelected {
-        void connectDeviceItem(int position);
-    }
-
 
 
 }

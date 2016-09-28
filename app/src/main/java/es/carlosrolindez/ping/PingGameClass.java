@@ -18,7 +18,8 @@ class PingGameClass {
     public static final int GOAL = 0x40;
     public static final int END = 0x50;
 
-    private static final int BALL_GPF = 2;
+    private static final int BALL_X_GPF = 3;
+    private static final float BALL_Y_GPF = 1.2f;
     private static final int PLAYER_GPF = 2;
 
     // PING ENTITIES
@@ -257,11 +258,11 @@ class PingGameClass {
                     xSize = SIZE_BALL;
                     ySize = SIZE_BALL;
                     setPosition(WINDOWS_X_SIZE / 2.0f , WINDOWS_Y_SIZE / 2.0f);
-                    setXdelta(BALL_GPF);
+                    setXdelta(BALL_X_GPF);
                     if ((Math.random() * 2) > 1) {
-                        setYdelta(0.60f);
+                        setYdelta(BALL_Y_GPF);
                     } else {
-                        setYdelta(-0.60f);
+                        setYdelta(-BALL_Y_GPF);
                     }
                 default:
                     break;
@@ -358,8 +359,8 @@ class PingGameClass {
                     else {
                         yDelta *= 2;
                         yDelta += randomDelta();
-                        if (yDelta < (-3 * BALL_GPF))
-                            yDelta = -3 * BALL_GPF;
+                        if (yDelta < (-3 * BALL_Y_GPF))
+                            yDelta = -3 * BALL_Y_GPF;
                     }
                 } else if ((playerYposition+(HEIGHT_PLAYER/4)+(SIZE_BALL/2)) > yPosition) { // Middle area
                     yDelta += randomDelta();
@@ -367,8 +368,8 @@ class PingGameClass {
                     if (yDelta > 0) {
                         yDelta *= 2;
                         yDelta += randomDelta();
-                        if (yDelta > (3 * BALL_GPF))
-                            yDelta = 3 * BALL_GPF;
+                        if (yDelta > (3 * BALL_Y_GPF))
+                            yDelta = 3 * BALL_Y_GPF;
                     }
                     else {
                         yDelta /= 2;
@@ -393,7 +394,7 @@ class PingGameClass {
         }
 
         private double randomDelta() {
-            return 0.3f * rand.nextGaussian();
+            return (BALL_Y_GPF / 2) * rand.nextGaussian();
         }
     }
 

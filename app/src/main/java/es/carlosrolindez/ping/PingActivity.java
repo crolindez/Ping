@@ -27,26 +27,30 @@ import org.jsoup.Jsoup;
 
 import java.util.Set;
 
+// TODO Two speeds: Normal & Fast
 
-public class PingActivity extends FragmentActivity  implements LaunchFragment.OnDeviceSelected, Handler.Callback, GameFragment.OnGameFragmentInteractionListener {
+public class PingActivity extends FragmentActivity  implements  LaunchFragment.OnLaunchUpdate,
+                                                                SelectFragment.OnDeviceSelected,
+                                                                Handler.Callback,
+                                                                GameFragment.OnGameFragmentInteractionListener {
 
     private final String TAG = "PingActivity";
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
-
+/*
     private final int MAX_NUM_DEVICES = 100;
     private BluetoothDevice[] mPairedDevices;
     private int numDevices;
-
+*/
 
     private ServerSocketHandler serviceThread;
-//    private ClientSocketHandler clientThread;
     private GameCommManager gameRunnable;
 
     private final Handler handler = new Handler(this);
 
     private LaunchFragment launchFragment;
+    private SelectFragment selectFragment;
     private GameFragment gameFragment;
 
     private boolean paused;
@@ -64,8 +68,6 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         preferences = getSharedPreferences("Name", MODE_PRIVATE);
         playerName = preferences.getString("username", getResources().getString(R.string.player));
 
-        if (playerName.equals(getResources().getString(R.string.player)))
-            createDialog();
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -78,6 +80,8 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         new GetVersionCode().execute();
 
         launchFragment = new LaunchFragment();
+        launchFragment.setLaunchFragment(playerName);
+        selectFragment = new SelectFragment();
         gameFragment = new GameFragment();
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -108,14 +112,14 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
-        } else {
+        } /*else {
 
             Set<BluetoothDevice> set = mBluetoothAdapter.getBondedDevices();
             if (set!=null) {
                 mPairedDevices = set.toArray(new BluetoothDevice[MAX_NUM_DEVICES]);
                 numDevices = set.size();
             }
-        }
+        }*/
 
 
     }
@@ -123,7 +127,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     protected void onResume() {
         super.onResume();
         paused = false;
-         showArrayDevices();
+//         showArrayDevices();
          startServiceThread();
     }
     /* unregister the broadcast receiver */
@@ -135,22 +139,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case R.id.menu_player_name:
-                createDialog();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     private void startServiceThread() {
         if (serviceThread!=null) {
@@ -187,7 +176,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                     ft = getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.frame_container, launchFragment, "services");
                     ft.commit();
-                    showArrayDevices();
+ //                   showArrayDevices();
                     startServiceThread();
                 }
                 break;
@@ -198,7 +187,7 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
                     serviceThread = null;
                 }
                 gameRunnable = (GameCommManager) msg.obj;
-                gameFragment.setGameFragment(gameRunnable, playerName, this);
+                gameFragment.setGameFragment(gameRunnable, playerName);
                 ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.frame_container, gameFragment, "game");
                 ft.commit();
@@ -209,36 +198,38 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
     }
 
 
-    private void showArrayDevices() {
+ /*   private void showArrayDevices() {
         if (mPairedDevices == null ) return;
-        if (launchFragment == null ) return;
+        if (selectFragment == null ) return;
 
-        launchFragment.deleteDeviceList();
+        selectFragment.deleteDeviceList();
         for (int index=0; index<numDevices; index++) {
-            launchFragment.addDevice(mPairedDevices[index].getName());
+            selectFragment.addDevice(mPairedDevices[index].getName());
         }
 
     }
-
-
-    public void addMessage(String text) {
-        if (launchFragment != null) launchFragment.addMessage(text);
+*/
+    public void savePlayerName(String name) {
+        playerName = name;
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.putString("username", playerName);
+        edit.apply();
     }
 
-    public void connectDeviceItem(int position) {
+    public void startSelection(int level) {
+        FragmentTransaction ft;
+        ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.frame_container, selectFragment, "selection");
+        ft.commit();
+    }
 
+    public void connectDeviceItem(BluetoothDevice device) {
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-
-
-        if (MAX_NUM_DEVICES>position) {
-            connectDevice(mPairedDevices[position]);
-        } else {
-        }
+        connectDevice(device);
     }
 
     private void connectDevice(BluetoothDevice device) {
 
-//        closeConnection();
         new ClientSocketHandler(handler,device).start();
     }
 
@@ -287,29 +278,4 @@ public class PingActivity extends FragmentActivity  implements LaunchFragment.On
 
         }
     }
-
-    private void createDialog() {
-
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final View view = getLayoutInflater().inflate(R.layout.name_dialog, null);
-        final EditText nameText = (EditText) view.findViewById(R.id.dialog_player_name);
-        nameText.setText(playerName);
-        builder.setView(view)
-                .setMessage(R.string.intro_name)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Editable editable = nameText.getText();
-                        playerName = nameText.getText().toString();
-                        if (playerName.isEmpty())
-                            playerName = getResources().getString(R.string.player);
-                        SharedPreferences.Editor edit = preferences.edit();
-                        edit.putString("username", playerName);
-                        edit.apply();
-                    }
-                });
-        builder.show();
-    }
-
 }

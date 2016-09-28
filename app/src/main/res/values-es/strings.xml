@@ -1,8 +1,13 @@
 <resources>
     <string name="app_name">Ping</string>
     <string name="player">Jugador</string>
-    <string name="intro_name">Introduzca el nombre</string>
+    <string name="player_name">Nombre:</string>
     <string name="bt_not_available">Bluetooth no disponible</string>
     <string name="bt_not_enabled">Bluetooth desactivado</string>
     <string name="there_is_an_update">Por favor, actualice la aplicación</string>
+    <string name="select_opponent">Seleccione contrincante:</string>
+    <string name="easy">facil</string>
+    <string name="medium">medio</string>
+    <string name="hard">dificil</string>
+    <string name="expert">experto</string>
 </resources>

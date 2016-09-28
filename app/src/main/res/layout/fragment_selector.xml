@@ -1,0 +1,35 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="es.carlosrolindez.ping.SelectFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/windows"
+        android:baselineAligned="false">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_opponent"
+            android:layout_gravity="center_horizontal"
+            android:textAlignment="center"
+            android:textSize="30sp"
+            android:layout_marginTop="30dp"/>
+
+
+        <ListView
+            android:id="@+id/devicesbt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#b5b5b5"
+            android:dividerHeight="1dp"
+            android:layout_margin="17dp" />
+
+    </LinearLayout>
+
+
+</FrameLayout>

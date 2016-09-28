@@ -31,5 +31,11 @@ class Constants {
     // Intent request codes
 	public static final int REQUEST_ENABLE_BT = 1;
 
+	public static final int LEVEL_EASY = 0;
+	public static final int LEVEL_MEDIUM = 1;
+	public static final int LEVEL_HARD = 2;
+	public static final int LEVEL_EXPERT = 3;
+
+
 
 }

@@ -1,6 +1,7 @@
 package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
+import android.content.Context;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
@@ -49,12 +50,23 @@ public class GameFragment extends Fragment {
     private OnGameFragmentInteractionListener mListener;
 
 
-    public void setGameFragment(GameCommManager manager, String name, OnGameFragmentInteractionListener listener) {
+    public void setGameFragment(GameCommManager manager, String name) {
 
         gameManager = manager;
         playerName = name;
-        mListener = listener;
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnGameFragmentInteractionListener) {
+            mListener = (OnGameFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnGameFragmentInteractionListener");
+        }
+    }
+
 
 
     @Override
@@ -66,7 +78,6 @@ public class GameFragment extends Fragment {
         if (ab!=null) ab.hide();
 
         int uiOptions = getActivity().getWindow().getDecorView().getSystemUiVisibility();
-
         uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         if (Build.VERSION.SDK_INT >= 16) {
             uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -75,6 +86,7 @@ public class GameFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= 19) {
             uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
+
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
