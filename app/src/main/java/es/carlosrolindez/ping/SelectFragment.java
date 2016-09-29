@@ -4,9 +4,11 @@ import android.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,8 +44,12 @@ public class SelectFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
-        mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
+        mContentView = inflater.inflate(R.layout.fragment_selector, container, false);
+
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.show();
 
@@ -63,39 +69,23 @@ public class SelectFragment extends Fragment {
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
-        return mContentView;
-    }
 
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnDeviceSelected) {
-            mListener = (OnDeviceSelected) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnDeviceSelected");
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+        if (mContentView==null)  Log.e("TAG","mContent View null");
+        else  Log.e("TAG","mContent View created ok");
 
         ListView deviceView = (ListView) mContentView.findViewById(R.id.devicesbt);
+        if (deviceView==null)  Log.e("TAG","device View null");
+        else  Log.e("TAG","device View created ok");
+
+
         deviceList = new ArrayList<>();
+        if (deviceList==null)  Log.e("TAG","device List null");
+        else  Log.e("TAG","device List created ok");
+
         deviceListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, deviceList);
+        if (deviceListAdapter==null)  Log.e("TAG","device List  adapter null");
+        else  Log.e("TAG","device List adapter created ok");
+
         deviceView.setAdapter(deviceListAdapter);
         deviceView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -117,6 +107,25 @@ public class SelectFragment extends Fragment {
             addDevice(mPairedDevices[index].getName());
         }
 
+        return mContentView;
+    }
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnDeviceSelected) {
+            mListener = (OnDeviceSelected) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnDeviceSelected");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
 

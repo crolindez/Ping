@@ -2,6 +2,7 @@ package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
@@ -74,6 +75,9 @@ public class GameFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View mContentView = inflater.inflate(R.layout.fragment_game, container, false);
+
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.hide();
 

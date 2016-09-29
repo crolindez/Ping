@@ -1,10 +1,8 @@
 package es.carlosrolindez.ping;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -16,16 +14,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.text.Editable;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
-
-import java.util.Set;
 
 // TODO Two speeds: Normal & Fast
 
@@ -270,11 +261,16 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
 
             if (onlineVersion != null && currentVersion != null && !onlineVersion.equals(currentVersion)) {
-                Intent i = new Intent(android.content.Intent.ACTION_VIEW);
-                Toast.makeText(PingActivity.this, getResources().getString(R.string.there_is_an_update), Toast.LENGTH_SHORT).show();
-                i.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + PingActivity.this.getPackageName()));
-                startActivity(i);
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + PingActivity.this.getPackageName()));
+                String title = getResources().getString(R.string.there_is_an_update);
+
+                Intent chooser = Intent.createChooser(intent, title);
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(chooser);
+                }
             }
+
 
         }
     }

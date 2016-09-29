@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="es.carlosrolindez.ping">
 
-    android:versionCode="2.0.1"
+    android:versionCode="2.1.0"
     android:versionName="Julia" >
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
@@ -17,11 +17,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".PingActivity"
-            android:screenOrientation="landscape" >
+        <activity android:name=".PingActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

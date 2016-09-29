@@ -2,11 +2,13 @@ package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +60,9 @@ public class LaunchFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View mContentView = inflater.inflate(R.layout.fragment_launch, container, false);
+
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.show();
 
@@ -76,19 +81,21 @@ public class LaunchFragment extends Fragment {
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
         name = (EditText) mContentView.findViewById(R.id.player_name);
+        name.setText(playerName);
         name.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                Log.e("beforeTextChanged",s.toString());
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                Log.e("onTextChanged",s.toString());
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+                Log.e("afterTextChanged",s.toString());
                 mListener.savePlayerName(name.getText().toString());
             }
         });
