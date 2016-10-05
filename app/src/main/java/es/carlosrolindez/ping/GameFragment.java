@@ -52,7 +52,6 @@ public class GameFragment extends Fragment {
 
 
     public void setGameFragment(GameCommManager manager, String name) {
-
         gameManager = manager;
         playerName = name;
     }
@@ -76,6 +75,7 @@ public class GameFragment extends Fragment {
         // Inflate the layout for this fragment
         View mContentView = inflater.inflate(R.layout.fragment_game, container, false);
 
+        setRetainInstance(true);
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         ActionBar ab = getActivity().getActionBar();
@@ -130,6 +130,7 @@ public class GameFragment extends Fragment {
 
             }
         });
+
 
 
         if (!gameManager.getOwnership()) {

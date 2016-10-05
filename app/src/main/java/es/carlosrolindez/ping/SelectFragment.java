@@ -8,7 +8,6 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,21 +69,11 @@ public class SelectFragment extends Fragment {
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
 
-        if (mContentView==null)  Log.e("TAG","mContent View null");
-        else  Log.e("TAG","mContent View created ok");
-
         ListView deviceView = (ListView) mContentView.findViewById(R.id.devicesbt);
-        if (deviceView==null)  Log.e("TAG","device View null");
-        else  Log.e("TAG","device View created ok");
-
 
         deviceList = new ArrayList<>();
-        if (deviceList==null)  Log.e("TAG","device List null");
-        else  Log.e("TAG","device List created ok");
 
         deviceListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, android.R.id.text1, deviceList);
-        if (deviceListAdapter==null)  Log.e("TAG","device List  adapter null");
-        else  Log.e("TAG","device List adapter created ok");
 
         deviceView.setAdapter(deviceListAdapter);
         deviceView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
