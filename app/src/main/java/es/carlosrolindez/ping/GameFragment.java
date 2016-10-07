@@ -262,12 +262,7 @@ public class GameFragment extends Fragment {
             }
         }
     }
-/*
-    public interface OnGameFragmentInteractionListener {
-        void closeConnection();
 
-    }
-*/
     @Override
     public void onPause() {
         super.onPause();

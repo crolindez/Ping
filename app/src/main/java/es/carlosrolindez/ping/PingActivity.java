@@ -34,25 +34,18 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
-/*
-    private final int MAX_NUM_DEVICES = 100;
-    private BluetoothDevice[] mPairedDevices;
-    private int numDevices;
-*/
-
     private ServerSocketHandler serviceThread;
     private GameCommManager gameRunnable;
-
     private Handler handler;
 
-//    private LaunchFragment launchFragment;
-//    private SelectFragment selectFragment;
     private GameFragment gameFragment;
 
-    private boolean paused;
+    private static boolean paused;
 
     private SharedPreferences preferences;
     private String playerName;
+
+    FragmentTransaction ft;
 
 
 
@@ -66,6 +59,8 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+
+
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, getString(R.string.bt_not_available), Toast.LENGTH_LONG).show();
@@ -76,7 +71,7 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
             new GetVersionCode().execute();
             LaunchFragment launchFragment = new LaunchFragment();
             launchFragment.setLaunchFragment(playerName);
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.frame_container, launchFragment, "launch");
             ft.commit();
         } else {
@@ -88,6 +83,8 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
             } else {
                 handler = gameFragment.getHandler();
+                gameRunnable = gameFragment.getGameCommManager();
+                Log.e(TAG,"gameRunnable re-loaded");
             }
         }
 
@@ -97,12 +94,13 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.e(TAG,"onSaveInstanceState");
         super.onSaveInstanceState(outState);
-
         //Save the fragment's instance
         if (gameFragment!=null) {
             getSupportFragmentManager().putFragment(outState, "game", gameFragment);
         }
+
     }
 
     @Override
@@ -141,24 +139,10 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
      @Override
     protected void onResume() {
         super.onResume();
-        paused = false;
-//         showArrayDevices();
+         paused = false;
          startServiceThread();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (isFinishing()) {
-            Log.e(TAG,"gameRunable erased");
-            if (gameRunnable!=null) {
-                gameRunnable.cancel();;
-                gameRunnable=null;
-            }
-        } else {
-            //It's an orientation change.
-        }
-    }
 
     /* unregister the broadcast receiver */
     @Override
@@ -166,6 +150,13 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
         super.onPause();
         paused = true;
         closeConnection();
+        if (!isChangingConfigurations()) {
+            if (gameRunnable!=null) {
+                Log.e(TAG, "gameRunable erased");
+                gameRunnable.cancel();
+                gameRunnable = null;
+            }
+        }
     }
 
 
@@ -188,9 +179,11 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
         }
     }
 
+
+
     @Override
     public boolean handleMessage(Message msg) {
-        FragmentTransaction ft;
+
         switch (msg.what) {
             case Constants.MESSAGE:
                 byte[] readBuf = (byte[]) msg.obj;
@@ -201,15 +194,19 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
             case Constants.MY_CLOSE:
                 Log.e(TAG,"My Close");
-                if (!paused) {
+                finish();
+ /*               if (!paused) {
+
+                    Log.e(TAG,"My Close unpaused");
                     LaunchFragment launchFragment = new LaunchFragment();
                     ft = getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.frame_container, launchFragment, "launch");
-                    ft.commit();
+                    ft.commitAllowingStateLoss();
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
- //                   showArrayDevices();
                     startServiceThread();
-                }
+                } else {
+                    Log.e(TAG,"My Close paused");
+                }*/
                 break;
 
             case Constants.MY_HANDLE:
@@ -217,6 +214,7 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
                     serviceThread.cancel();
                     serviceThread = null;
                 }
+
                 gameRunnable = (GameCommManager) msg.obj;
                 Log.e(TAG,"gameRunnable loaded");
                 gameFragment = new GameFragment();
@@ -231,18 +229,6 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
         return true;
     }
 
-
- /*   private void showArrayDevices() {
-        if (mPairedDevices == null ) return;
-        if (selectFragment == null ) return;
-
-        selectFragment.deleteDeviceList();
-        for (int index=0; index<numDevices; index++) {
-            selectFragment.addDevice(mPairedDevices[index].getName());
-        }
-
-    }
-*/
     public void savePlayerName(String name) {
         playerName = name;
         SharedPreferences.Editor edit = preferences.edit();
@@ -251,7 +237,6 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
     }
 
     public void startSelection(int level) {
-        FragmentTransaction ft;
         SelectFragment selectFragment = new SelectFragment();
         ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.frame_container, selectFragment, "select");
