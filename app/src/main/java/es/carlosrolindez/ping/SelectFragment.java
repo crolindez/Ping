@@ -4,7 +4,6 @@ import android.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -47,7 +46,6 @@ public class SelectFragment extends Fragment {
         // Inflate the layout for this fragment
         mContentView = inflater.inflate(R.layout.fragment_selector, container, false);
 
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.show();

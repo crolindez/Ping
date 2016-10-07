@@ -1,8 +1,6 @@
 package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
-import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
@@ -25,9 +23,11 @@ public class GameFragment extends Fragment {
     private static final String TAG = "GameFragment";
 
     private String playerName;
+    private int level;
     private TextView playerRightText;
 
     private GameCommManager gameManager = null;
+    private Handler comHandler;
 
     private String message;
 
@@ -48,15 +48,25 @@ public class GameFragment extends Fragment {
     private Runnable actionUp;
     private Runnable actionDown;
 
-    private OnGameFragmentInteractionListener mListener;
+//    private OnGameFragmentInteractionListener mListener;
 
 
-    public void setGameFragment(GameCommManager manager, String name) {
+    public void setGameFragment(GameCommManager manager, String name, Handler handler) {
         gameManager = manager;
         playerName = name;
+        comHandler = handler;
     }
 
+    public Handler getHandler() {
+        return comHandler;
+    }
+
+    public GameCommManager getGameCommManager() {
+        return gameManager;
+    }
+  /*
     @Override
+
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnGameFragmentInteractionListener) {
@@ -66,7 +76,7 @@ public class GameFragment extends Fragment {
                     + " must implement OnGameFragmentInteractionListener");
         }
     }
-
+*/
 
 
     @Override
@@ -76,7 +86,6 @@ public class GameFragment extends Fragment {
         View mContentView = inflater.inflate(R.layout.fragment_game, container, false);
 
         setRetainInstance(true);
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         ActionBar ab = getActivity().getActionBar();
         if (ab!=null) ab.hide();
@@ -132,13 +141,12 @@ public class GameFragment extends Fragment {
         });
 
 
-
         if (!gameManager.getOwnership()) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    message = INIT + " " + playerName ;
+                    message = INIT + " " + playerName + " " + level;
                     gameManager.write(message);
                     new Thread(new GameRunnable(false)).start();
                 }
@@ -214,25 +222,19 @@ public class GameFragment extends Fragment {
         return mContentView;
     }
 
-/*
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener.closeConnection();
-        pingGame.setState(PingGameClass.END);
-    }
 
-*/
+
     public void pushMessage(String mes) {
         String arg[] = mes.split(" ");
         int index = 0;
         while (index < arg.length) {
 
-            if ((arg[index].equals(INIT)) && ((arg.length - index) >= 2)) {
+            if ((arg[index].equals(INIT)) && ((arg.length - index) >= 3)) {
                 playerRightText.setText(arg[index + 1]);
+                level = Integer.parseInt(arg[index + 2]);
                 index++;
                 if (gameManager.getOwnership()) {
-                    message = INIT + " " + playerName;
+                    message = INIT + " " + playerName + " " + level;
                     gameManager.write(message);
                     new Thread(new GameRunnable(true)).start();
 
@@ -260,16 +262,15 @@ public class GameFragment extends Fragment {
             }
         }
     }
-
+/*
     public interface OnGameFragmentInteractionListener {
         void closeConnection();
 
     }
-
+*/
     @Override
     public void onPause() {
         super.onPause();
-        mListener.closeConnection();
         pingGame.setState(PingGameClass.END);
     }
 

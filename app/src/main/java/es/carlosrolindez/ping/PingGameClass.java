@@ -18,8 +18,8 @@ class PingGameClass {
     public static final int GOAL = 0x40;
     public static final int END = 0x50;
 
-    private static final int BALL_X_GPF = 3;
-    private static final float BALL_Y_GPF = 1.2f;
+    private static final float BALL_X_GPF = 2.0f;
+    private static final float BALL_Y_GPF = 0.6f;
     private static final int PLAYER_GPF = 2;
 
     // PING ENTITIES
@@ -61,6 +61,7 @@ class PingGameClass {
 
     // Game State
     private int gameState;
+    private float levelScale;
 
     private int leftScore, rightScore;
 
@@ -138,9 +139,25 @@ class PingGameClass {
     }
 
     public synchronized void setState(int newState) {
-
         gameState = newState;
+    }
 
+    public synchronized void setLevel(int level) {
+        switch (level) {
+            case Constants.LEVEL_EXPERT:
+                levelScale = 2.0f;
+                break;
+            case Constants.LEVEL_HARD:
+                levelScale = 1.5f;
+                break;
+            case Constants.LEVEL_MEDIUM:
+                levelScale = 1.5f;
+                break;
+            case Constants.LEVEL_EASY:
+                levelScale = 1.0f;
+                break;
+
+        }
     }
 
     public synchronized int getState() {
@@ -260,9 +277,9 @@ class PingGameClass {
                     setPosition(WINDOWS_X_SIZE / 2.0f , WINDOWS_Y_SIZE / 2.0f);
                     setXdelta(BALL_X_GPF);
                     if ((Math.random() * 2) > 1) {
-                        setYdelta(BALL_Y_GPF);
+                        setYdelta(BALL_Y_GPF * levelScale);
                     } else {
-                        setYdelta(-BALL_Y_GPF);
+                        setYdelta(-BALL_Y_GPF * levelScale);
                     }
                 default:
                     break;
@@ -359,8 +376,8 @@ class PingGameClass {
                     else {
                         yDelta *= 2;
                         yDelta += randomDelta();
-                        if (yDelta < (-3 * BALL_Y_GPF))
-                            yDelta = -3 * BALL_Y_GPF;
+                        if (yDelta < (-3 * BALL_Y_GPF * levelScale))
+                            yDelta = -3 * BALL_Y_GPF * levelScale;
                     }
                 } else if ((playerYposition+(HEIGHT_PLAYER/4)+(SIZE_BALL/2)) > yPosition) { // Middle area
                     yDelta += randomDelta();
@@ -368,8 +385,8 @@ class PingGameClass {
                     if (yDelta > 0) {
                         yDelta *= 2;
                         yDelta += randomDelta();
-                        if (yDelta > (3 * BALL_Y_GPF))
-                            yDelta = 3 * BALL_Y_GPF;
+                        if (yDelta > (3 * BALL_Y_GPF * levelScale))
+                            yDelta = 3 * BALL_Y_GPF * levelScale;
                     }
                     else {
                         yDelta /= 2;
@@ -394,7 +411,7 @@ class PingGameClass {
         }
 
         private double randomDelta() {
-            return (BALL_Y_GPF / 2) * rand.nextGaussian();
+            return ( (levelScale * BALL_Y_GPF) / 2) * rand.nextGaussian();
         }
     }
 

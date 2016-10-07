@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -26,12 +27,12 @@ import org.jsoup.Jsoup;
 
 public class PingActivity extends FragmentActivity  implements  LaunchFragment.OnLaunchUpdate,
                                                                 SelectFragment.OnDeviceSelected,
-                                                                Handler.Callback,
-                                                                GameFragment.OnGameFragmentInteractionListener {
+                                                                Handler.Callback/*,
+                                                                GameFragment.OnGameFragmentInteractionListener */{
 
     private final String TAG = "PingActivity";
 
-    private static BluetoothAdapter mBluetoothAdapter = null;
+    private BluetoothAdapter mBluetoothAdapter = null;
 
 /*
     private final int MAX_NUM_DEVICES = 100;
@@ -39,10 +40,10 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
     private int numDevices;
 */
 
-    private  ServerSocketHandler serviceThread;
-    private static GameCommManager gameRunnable;
+    private ServerSocketHandler serviceThread;
+    private GameCommManager gameRunnable;
 
-    private final Handler handler = new Handler(this);
+    private Handler handler;
 
 //    private LaunchFragment launchFragment;
 //    private SelectFragment selectFragment;
@@ -63,7 +64,6 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
         preferences = getSharedPreferences("Name", MODE_PRIVATE);
         playerName = preferences.getString("username", getResources().getString(R.string.player));
 
-        Log.e(TAG,"onCreate");
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // If the adapter is null, then Bluetooth is not supported
@@ -72,28 +72,22 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
             finish();
         }
         if (savedInstanceState == null) {
-            Log.e(TAG,"new Instance");
+            handler = new Handler(this);
             new GetVersionCode().execute();
             LaunchFragment launchFragment = new LaunchFragment();
             launchFragment.setLaunchFragment(playerName);
- //           selectFragment = new SelectFragment();
- //           gameFragment = new GameFragment();
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.frame_container, launchFragment, "launch");
             ft.commit();
         } else {
-            Log.e(TAG,"reused Instance");
-            //Restore the fragment's instance
-            if (handler == null) Log.e(TAG,"handler null");
-            else Log.e(TAG,"handler NOT null");
-            if (gameRunnable == null) Log.e(TAG,"gameRunnable null");
-            else Log.e(TAG,"gameRunnable NOT null");
+
             gameFragment = (GameFragment) getSupportFragmentManager().getFragment(savedInstanceState, "game");
             if (gameFragment==null) {
-                Log.e(TAG,"gameFragment null");
+                handler = new Handler(this);
+                Log.e(TAG,"gameRunnable reseted");
+
             } else {
-                Log.e(TAG, "gameFragment found");
-                gameFragment.setGameFragment(gameRunnable, playerName);
+                handler = gameFragment.getHandler();
             }
         }
 
@@ -108,9 +102,6 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
         //Save the fragment's instance
         if (gameFragment!=null) {
             getSupportFragmentManager().putFragment(outState, "game", gameFragment);
-            Log.e(TAG, "gameFragment saved");
-        } else {
-            Log.e(TAG, "gameFragment NOT saved");
         }
     }
 
@@ -154,6 +145,21 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 //         showArrayDevices();
          startServiceThread();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isFinishing()) {
+            Log.e(TAG,"gameRunable erased");
+            if (gameRunnable!=null) {
+                gameRunnable.cancel();;
+                gameRunnable=null;
+            }
+        } else {
+            //It's an orientation change.
+        }
+    }
+
     /* unregister the broadcast receiver */
     @Override
     protected void onPause() {
@@ -174,11 +180,9 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
         serviceThread.start();
     }
 
+
     public void closeConnection() {
- /*       if (gameRunnable!=null) {
-            gameRunnable.cancel();
-            gameRunnable = null;
-        } else */if (serviceThread!=null) {
+        if (serviceThread!=null) {
             serviceThread.cancel();
             serviceThread =  null;
         }
@@ -196,11 +200,13 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
                 break;
 
             case Constants.MY_CLOSE:
+                Log.e(TAG,"My Close");
                 if (!paused) {
                     LaunchFragment launchFragment = new LaunchFragment();
                     ft = getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.frame_container, launchFragment, "launch");
                     ft.commit();
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
  //                   showArrayDevices();
                     startServiceThread();
                 }
@@ -212,13 +218,13 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
                     serviceThread = null;
                 }
                 gameRunnable = (GameCommManager) msg.obj;
-                if (gameRunnable == null) Log.e(TAG+"2","gameRunnable null");
-                else Log.e(TAG+"2","gameRunnable NOT null");
+                Log.e(TAG,"gameRunnable loaded");
                 gameFragment = new GameFragment();
-                gameFragment.setGameFragment(gameRunnable, playerName);
+                gameFragment.setGameFragment(gameRunnable, playerName, handler);
                 ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.frame_container, gameFragment, "game");
                 ft.commit();
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 break;
 
         }
