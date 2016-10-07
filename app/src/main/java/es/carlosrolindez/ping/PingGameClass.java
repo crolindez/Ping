@@ -80,8 +80,24 @@ class PingGameClass {
     private static float xGU, yGU; // game units
 
 
-    PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar, TextView leftScoreText,TextView rightScoreText) {
+    PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar, TextView leftScoreText,TextView rightScoreText,int level) {
         gameState = START;
+
+        switch (level) {
+            case Constants.LEVEL_EXPERT:
+                levelScale = 2.0f;
+                break;
+            case Constants.LEVEL_HARD:
+                levelScale = 1.5f;
+                break;
+            case Constants.LEVEL_MEDIUM:
+                levelScale = 1.5f;
+                break;
+            case Constants.LEVEL_EASY:
+                levelScale = 1.0f;
+                break;
+
+        }
 
         width = WINDOWS_X_SIZE; // default values.  Must be updated by UpdateWindowConstanst
         height = WINDOWS_Y_SIZE;
@@ -136,28 +152,12 @@ class PingGameClass {
         mTopBar.resizeImage((int)(WIDTH_BAR*xGU), (int) (HEIGHT_BAR*yGU));
         mBottomBar.resizeImage((int)(WIDTH_BAR*xGU), (int) (HEIGHT_BAR*yGU));
 
+
+
     }
 
     public synchronized void setState(int newState) {
         gameState = newState;
-    }
-
-    public synchronized void setLevel(int level) {
-        switch (level) {
-            case Constants.LEVEL_EXPERT:
-                levelScale = 2.0f;
-                break;
-            case Constants.LEVEL_HARD:
-                levelScale = 1.5f;
-                break;
-            case Constants.LEVEL_MEDIUM:
-                levelScale = 1.5f;
-                break;
-            case Constants.LEVEL_EASY:
-                levelScale = 1.0f;
-                break;
-
-        }
     }
 
     public synchronized int getState() {

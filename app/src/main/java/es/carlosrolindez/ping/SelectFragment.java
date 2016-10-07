@@ -34,6 +34,7 @@ public class SelectFragment extends Fragment {
     private BluetoothDevice[] mPairedDevices;
     private int numDevices;
 
+
     public SelectFragment() {
         // Required empty public constructor
     }

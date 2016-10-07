@@ -23,7 +23,7 @@ public class GameFragment extends Fragment {
     private static final String TAG = "GameFragment";
 
     private String playerName;
-    private int level;
+    private int mLevel;
     private TextView playerRightText;
 
     private GameCommManager gameManager = null;
@@ -51,10 +51,11 @@ public class GameFragment extends Fragment {
 //    private OnGameFragmentInteractionListener mListener;
 
 
-    public void setGameFragment(GameCommManager manager, String name, Handler handler) {
+    public void setGameFragment(GameCommManager manager, String name, Handler handler, int level) {
         gameManager = manager;
         playerName = name;
         comHandler = handler;
+        mLevel = level;
     }
 
     public Handler getHandler() {
@@ -126,7 +127,8 @@ public class GameFragment extends Fragment {
         playerRightText.setText("Player 2");
 
 
-        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
+        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText, mLevel);
+
 
 
         RelativeLayout window = (RelativeLayout) mContentView.findViewById(R.id.game_zone);
@@ -141,12 +143,12 @@ public class GameFragment extends Fragment {
         });
 
 
-        if (!gameManager.getOwnership()) {
+        if (gameManager.getOwnership()) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    message = INIT + " " + playerName + " " + level;
+                    message = INIT + " " + playerName + " " + mLevel;
                     gameManager.write(message);
                     new Thread(new GameRunnable(false)).start();
                 }
@@ -231,10 +233,10 @@ public class GameFragment extends Fragment {
 
             if ((arg[index].equals(INIT)) && ((arg.length - index) >= 3)) {
                 playerRightText.setText(arg[index + 1]);
-                level = Integer.parseInt(arg[index + 2]);
+                mLevel = Integer.parseInt(arg[index + 2]);
                 index++;
-                if (gameManager.getOwnership()) {
-                    message = INIT + " " + playerName + " " + level;
+                if (!gameManager.getOwnership()) {
+                    message = INIT + " " + playerName + " " + mLevel;
                     gameManager.write(message);
                     new Thread(new GameRunnable(true)).start();
 

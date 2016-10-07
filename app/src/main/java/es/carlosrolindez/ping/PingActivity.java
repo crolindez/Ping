@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
@@ -40,12 +39,14 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
     private GameFragment gameFragment;
 
-    private static boolean paused;
+ //   private static boolean paused;
 
     private SharedPreferences preferences;
     private String playerName;
 
-    FragmentTransaction ft;
+    private FragmentTransaction ft;
+
+    private int mLevel;
 
 
 
@@ -79,12 +80,10 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
             gameFragment = (GameFragment) getSupportFragmentManager().getFragment(savedInstanceState, "game");
             if (gameFragment==null) {
                 handler = new Handler(this);
-                Log.e(TAG,"gameRunnable reseted");
 
             } else {
                 handler = gameFragment.getHandler();
                 gameRunnable = gameFragment.getGameCommManager();
-                Log.e(TAG,"gameRunnable re-loaded");
             }
         }
 
@@ -94,7 +93,6 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.e(TAG,"onSaveInstanceState");
         super.onSaveInstanceState(outState);
         //Save the fragment's instance
         if (gameFragment!=null) {
@@ -139,7 +137,7 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
      @Override
     protected void onResume() {
         super.onResume();
-         paused = false;
+   //      paused = false;
          startServiceThread();
     }
 
@@ -148,11 +146,10 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
     @Override
     protected void onPause() {
         super.onPause();
-        paused = true;
+   //     paused = true;
         closeConnection();
         if (!isChangingConfigurations()) {
             if (gameRunnable!=null) {
-                Log.e(TAG, "gameRunable erased");
                 gameRunnable.cancel();
                 gameRunnable = null;
             }
@@ -193,20 +190,7 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
                 break;
 
             case Constants.MY_CLOSE:
-                Log.e(TAG,"My Close");
                 finish();
- /*               if (!paused) {
-
-                    Log.e(TAG,"My Close unpaused");
-                    LaunchFragment launchFragment = new LaunchFragment();
-                    ft = getSupportFragmentManager().beginTransaction();
-                    ft.replace(R.id.frame_container, launchFragment, "launch");
-                    ft.commitAllowingStateLoss();
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-                    startServiceThread();
-                } else {
-                    Log.e(TAG,"My Close paused");
-                }*/
                 break;
 
             case Constants.MY_HANDLE:
@@ -216,9 +200,8 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
                 }
 
                 gameRunnable = (GameCommManager) msg.obj;
-                Log.e(TAG,"gameRunnable loaded");
                 gameFragment = new GameFragment();
-                gameFragment.setGameFragment(gameRunnable, playerName, handler);
+                gameFragment.setGameFragment(gameRunnable, playerName, handler, mLevel);
                 ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.frame_container, gameFragment, "game");
                 ft.commit();
@@ -237,6 +220,7 @@ public class PingActivity extends FragmentActivity  implements  LaunchFragment.O
     }
 
     public void startSelection(int level) {
+        mLevel = level;
         SelectFragment selectFragment = new SelectFragment();
         ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.frame_container, selectFragment, "select");
