@@ -19,14 +19,14 @@
 
             <ImageButton
                 android:id="@+id/button_up"
-                android:src="@drawable/up"
+                android:src="@drawable/up_easy"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
             <ImageButton
                 android:id="@+id/button_down"
-                android:src="@drawable/down"
+                android:src="@drawable/down_easy"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
@@ -114,31 +114,31 @@
 
 
                 <ImageView
-                    android:src="@drawable/brick"
+                    android:src="@drawable/brick_easy"
                     android:layout_width="50dip"
                     android:layout_height="50dip"
                     android:id="@+id/ball"/>
 
                 <ImageView
-                    android:src="@drawable/brick"
+                    android:src="@drawable/brick_easy"
                     android:layout_width="7dip"
                     android:layout_height="7dip"
                     android:id="@+id/player1"
                     android:scaleType="fitXY" />
                 <ImageView
-                    android:src="@drawable/brick"
+                    android:src="@drawable/brick_easy"
                     android:layout_width="7dip"
                     android:layout_height="7dip"
                     android:id="@+id/player2"
                     android:scaleType="fitXY" />
                 <ImageView
-                    android:src="@drawable/brick"
+                    android:src="@drawable/brick_easy"
                     android:layout_width="100dip"
                     android:layout_height="1dip"
                     android:id="@+id/topbar"
                     android:scaleType="fitXY"/>
                 <ImageView
-                    android:src="@drawable/brick"
+                    android:src="@drawable/brick_easy"
                     android:layout_width="100dip"
                     android:layout_height="1dip"
                     android:id="@+id/bottombar"

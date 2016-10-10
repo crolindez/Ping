@@ -19,9 +19,6 @@ import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 
-// TODO Two speeds: Normal & Fast
-// TODO check retation when start playing:
-// - How to close gameRunnable when closing fragment (but not when rotating)
 
 
 public class PingActivity extends FragmentActivity  implements  LaunchFragment.OnLaunchUpdate,

@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,7 +25,6 @@ public class GameFragment extends Fragment {
 
     private String playerName;
     private int mLevel;
-    private TextView playerRightText;
 
     private GameCommManager gameManager = null;
     private Handler comHandler;
@@ -40,7 +40,7 @@ public class GameFragment extends Fragment {
     private final String INIT = "INIT";
     private final String GOAL = "GOAL";
 
-    private final int FPS = 15;
+    private final int FPS = 20;
 
     private PingGameClass pingGame;
 
@@ -48,6 +48,19 @@ public class GameFragment extends Fragment {
     private Handler handlerDown = null;
     private Runnable actionUp;
     private Runnable actionDown;
+
+    private ImageView ball;
+    private ImageView playerLeft;
+    private ImageView playerRight;
+    private ImageView topbar;
+    private ImageView bottombar;
+    private ImageButton buttonUp;
+    private ImageButton buttonDown;
+    private TextView leftScoreText;
+    private TextView colonScoreText;
+    private TextView rightScoreText;
+    private TextView playerLeftText;
+    private TextView playerRightText;
 
 
 
@@ -96,17 +109,17 @@ public class GameFragment extends Fragment {
 
         getActivity().getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
-        ImageView ball = (ImageView) mContentView.findViewById(R.id.ball);
-        ImageView playerLeft = (ImageView) mContentView.findViewById(R.id.player1);
-        ImageView playerRight = (ImageView) mContentView.findViewById(R.id.player2);
-        ImageView topbar = (ImageView) mContentView.findViewById(R.id.topbar);
-        ImageView bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
-        ImageButton buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
-        ImageButton buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
-        TextView leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
-        TextView colonScoreText = (TextView) mContentView.findViewById(R.id.colon);
-        TextView rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
-        TextView playerLeftText = (TextView) mContentView.findViewById(R.id.player_left);
+        ball = (ImageView) mContentView.findViewById(R.id.ball);
+        playerLeft = (ImageView) mContentView.findViewById(R.id.player1);
+        playerRight = (ImageView) mContentView.findViewById(R.id.player2);
+        topbar = (ImageView) mContentView.findViewById(R.id.topbar);
+        bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
+        buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
+        buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
+        leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
+        colonScoreText = (TextView) mContentView.findViewById(R.id.colon);
+        rightScoreText = (TextView) mContentView.findViewById(R.id.rightScore);
+        playerLeftText = (TextView) mContentView.findViewById(R.id.player_left);
         playerRightText = (TextView) mContentView.findViewById(R.id.player_right);
 
         Typeface myTypeface = Typeface.createFromAsset(getActivity().getAssets(), "seven_segments.ttf");
@@ -219,6 +232,47 @@ public class GameFragment extends Fragment {
         return mContentView;
     }
 
+    public void setLevel(int level) {
+        int resource;
+        int color;
+        switch (level) {
+            case Constants.LEVEL_EXPERT:
+                resource = R.drawable.brick_expert;
+                color = ContextCompat.getColor(getActivity(), R.color.colorExpert);
+                buttonUp.setImageResource(R.drawable.up_expert);
+                buttonDown.setImageResource(R.drawable.down_expert);
+                break;
+            case Constants.LEVEL_HARD:
+                resource = R.drawable.brick_hard;
+                color = ContextCompat.getColor(getActivity(), R.color.colorHard);
+                buttonUp.setImageResource(R.drawable.up_hard);
+                buttonDown.setImageResource(R.drawable.down_hard);
+                break;
+            case Constants.LEVEL_MEDIUM:
+                resource = R.drawable.brick_medium;
+                color = ContextCompat.getColor(getActivity(), R.color.colorMedium);
+                buttonUp.setImageResource(R.drawable.up_medium);
+                buttonDown.setImageResource(R.drawable.down_medium);
+                break;
+            case Constants.LEVEL_EASY:
+            default:
+                resource = R.drawable.brick_easy;
+                color = ContextCompat.getColor(getActivity(), R.color.colorEasy);
+                buttonUp.setImageResource(R.drawable.up_easy);
+                buttonDown.setImageResource(R.drawable.down_easy);
+        }
+
+        ball.setImageResource(resource);
+        playerLeft.setImageResource(resource);
+        playerRight.setImageResource(resource);
+        topbar.setImageResource(resource);
+        bottombar.setImageResource(resource);
+        leftScoreText.setTextColor(color);
+        colonScoreText.setTextColor(color);
+        rightScoreText.setTextColor(color);
+
+        pingGame.setLevel(level);
+    }
 
 
     public void pushMessage(String mes) {
@@ -229,7 +283,7 @@ public class GameFragment extends Fragment {
             if ((arg[index].equals(INIT)) && ((arg.length - index) >= 3)) {
                 playerRightText.setText(arg[index + 1]);
                 mLevel = Integer.parseInt(arg[index + 2]);
-                pingGame.setLevel(mLevel);
+                setLevel(mLevel);
                 index++;
                 if (gameRunnable == null) {
                     if (!gameManager.getOwnership()) {
@@ -306,6 +360,7 @@ public class GameFragment extends Fragment {
                         Long timer = System.currentTimeMillis();
                         if (timer > (gameTimer + tbs)) {
                             gameTimer += tbs;
+//TODO Verify getActivity does not return NULL
                             getActivity().runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
