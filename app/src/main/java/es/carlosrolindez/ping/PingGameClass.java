@@ -80,24 +80,8 @@ class PingGameClass {
     private static float xGU, yGU; // game units
 
 
-    PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar, TextView leftScoreText,TextView rightScoreText,int level) {
+    PingGameClass(ImageView ball, ImageView playerLeft, ImageView playerRight, ImageView topBar, ImageView bottomBar, TextView leftScoreText,TextView rightScoreText) {
         gameState = START;
-
-        switch (level) {
-            case Constants.LEVEL_EXPERT:
-                levelScale = 2.0f;
-                break;
-            case Constants.LEVEL_HARD:
-                levelScale = 1.5f;
-                break;
-            case Constants.LEVEL_MEDIUM:
-                levelScale = 1.5f;
-                break;
-            case Constants.LEVEL_EASY:
-                levelScale = 1.0f;
-                break;
-
-        }
 
         width = WINDOWS_X_SIZE; // default values.  Must be updated by UpdateWindowConstanst
         height = WINDOWS_Y_SIZE;
@@ -123,6 +107,26 @@ class PingGameClass {
     private synchronized void updateScore() {
         mLeftScoreText.setText(String.format(Locale.US, "%d",leftScore));
         mRightScoreText.setText(String.format(Locale.US, "%d",rightScore));
+    }
+
+    public synchronized void setLevel(int level) {
+
+        switch (level) {
+            case Constants.LEVEL_EXPERT:
+                levelScale = 1.6f;
+                break;
+            case Constants.LEVEL_HARD:
+                levelScale = 1.3f;
+                break;
+            case Constants.LEVEL_MEDIUM:
+                levelScale = 1.3f;
+                break;
+            case Constants.LEVEL_EASY:
+            default:
+                levelScale = 1.0f;
+                break;
+        }
+        mBall.resetPosition();
     }
 
     public synchronized void leftGoal() {
@@ -230,6 +234,7 @@ class PingGameClass {
     private class PositionClass {
 
         private float xPosition, yPosition, xDelta, yDelta, xSize, ySize;
+        private float xScaleDelta, yScaleDelta;
         private final ImageView mView;
         private final int entity;
         private float nextX, nextY;
@@ -240,6 +245,8 @@ class PingGameClass {
             yPosition = 0;
             xDelta = 0;
             yDelta = 0;
+            xScaleDelta = 0;
+            yScaleDelta = 0;
             xSize = 0;
             ySize = 0;
             mView = view;
@@ -275,11 +282,11 @@ class PingGameClass {
                     xSize = SIZE_BALL;
                     ySize = SIZE_BALL;
                     setPosition(WINDOWS_X_SIZE / 2.0f , WINDOWS_Y_SIZE / 2.0f);
-                    setXdelta(BALL_X_GPF);
+                    setXdelta(BALL_X_GPF * levelScale);
                     if ((Math.random() * 2) > 1) {
-                        setYdelta(BALL_Y_GPF * levelScale);
+                        setYdelta(BALL_Y_GPF);
                     } else {
-                        setYdelta(-BALL_Y_GPF * levelScale);
+                        setYdelta(-BALL_Y_GPF);
                     }
                 default:
                     break;
@@ -323,15 +330,19 @@ class PingGameClass {
 
         private void setXdelta(float x) {
             xDelta = x;
+            xScaleDelta = xDelta * levelScale;
         }
 
         private void setYdelta(float y) {
             yDelta = y;
+            yScaleDelta = yDelta * levelScale;
         }
 
         private void setDelta(float x, float y) {
             xDelta = x;
             yDelta = y;
+            xScaleDelta = xDelta * levelScale;
+            yScaleDelta = yDelta * levelScale;
         }
 
         private void resizeImage(int xSize, int ySize) {
@@ -346,27 +357,29 @@ class PingGameClass {
 
 
         private int nextYPosition() {
-            if ((yPosition + yDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
-                nextY =  2 * MAX_LIMIT_Y_BALL - yDelta - yPosition;
+            if ((yPosition + yScaleDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
+                nextY =  2 * MAX_LIMIT_Y_BALL - yScaleDelta - yPosition;
                 yDelta = -yDelta;
+                yScaleDelta = -yScaleDelta;
                 return BOUNCE_WALL;
-            } else if ((yPosition + yDelta) < MIN_LIMIT_Y_BALL) {
-                nextY = 2 * MIN_LIMIT_Y_BALL - yDelta - yPosition;
+            } else if ((yPosition + yScaleDelta) < MIN_LIMIT_Y_BALL) {
+                nextY = 2 * MIN_LIMIT_Y_BALL - yScaleDelta - yPosition;
+                yScaleDelta = -yScaleDelta;
                 yDelta = -yDelta;
                 return BOUNCE_WALL;
             } else {
-                nextY = yPosition + yDelta;
+                nextY = yPosition + yScaleDelta;
                 return OK_MOVEMENT;
             }
         }
 
         private int nextXPosition(float playerYposition) {
             if (xPosition < MIN_LIMIT_X_BALL) {
-                nextX = xPosition + xDelta;
+                nextX = xPosition + xScaleDelta;
                 return GOAL_MOVEMENT;
-            } else if ((xPosition + xDelta) < MIN_LIMIT_X_BALL) {
+            } else if ((xPosition + xScaleDelta) < MIN_LIMIT_X_BALL) {
                 if ((playerYposition-(HEIGHT_PLAYER/2)-(SIZE_BALL/2)) >= yPosition) {
-                    nextX = xPosition + xDelta;
+                    nextX = xPosition + xScaleDelta;
                     return GOAL_MOVEMENT;
                 } else if ((playerYposition-(HEIGHT_PLAYER/4)-(SIZE_BALL/2)) >= yPosition)  { // Up area
                     if (yDelta > 0) {
@@ -376,34 +389,40 @@ class PingGameClass {
                     else {
                         yDelta *= 2;
                         yDelta += randomDelta();
-                        if (yDelta < (-3 * BALL_Y_GPF * levelScale))
-                            yDelta = -3 * BALL_Y_GPF * levelScale;
+                        if (yDelta < (-3 * BALL_Y_GPF))
+                            yDelta = -3 * BALL_Y_GPF;
                     }
+                    yScaleDelta = yDelta * levelScale;
                 } else if ((playerYposition+(HEIGHT_PLAYER/4)+(SIZE_BALL/2)) > yPosition) { // Middle area
                     yDelta += randomDelta();
+                    yScaleDelta = yDelta * levelScale;
                 } else if ((playerYposition+(HEIGHT_PLAYER/2)+(SIZE_BALL/2)) > yPosition) { // Lower area
                     if (yDelta > 0) {
                         yDelta *= 2;
                         yDelta += randomDelta();
-                        if (yDelta > (3 * BALL_Y_GPF * levelScale))
-                            yDelta = 3 * BALL_Y_GPF * levelScale;
+                        if (yDelta > (3 * BALL_Y_GPF))
+                            yDelta = 3 * BALL_Y_GPF;
                     }
                     else {
                         yDelta /= 2;
                         yDelta += randomDelta();
                     }
+                    yScaleDelta = yDelta * levelScale;
                 } else {
-                    nextX = xPosition + xDelta;
+                    nextX = xPosition + xScaleDelta;
                     return GOAL_MOVEMENT;
                 }
-                nextX = 2 * MIN_LIMIT_X_BALL - xDelta - xPosition;
+                nextX = 2 * MIN_LIMIT_X_BALL - xScaleDelta - xPosition;
                 xDelta = -xDelta;
+                xScaleDelta = -xScaleDelta;
                 return BOUNCE_PLAYER;
-            } else if ((xPosition + xDelta) <= MAX_LIMIT_X_BALL) {
-                nextX = xPosition + xDelta;
+            } else if ((xPosition + xScaleDelta) <= MAX_LIMIT_X_BALL) {
+                nextX = xPosition + xScaleDelta;
                 return OK_MOVEMENT;
             } else {
                 nextX = MAX_LIMIT_X_BALL;
+                xScaleDelta = 0;
+                yScaleDelta = 0;
                 xDelta = 0;
                 yDelta = 0;
                 return OK_MOVEMENT;
@@ -411,7 +430,7 @@ class PingGameClass {
         }
 
         private double randomDelta() {
-            return ( (levelScale * BALL_Y_GPF) / 2) * rand.nextGaussian();
+            return ( (BALL_Y_GPF) / 2) * rand.nextGaussian();
         }
     }
 

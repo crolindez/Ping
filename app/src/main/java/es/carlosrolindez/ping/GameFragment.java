@@ -28,6 +28,7 @@ public class GameFragment extends Fragment {
 
     private GameCommManager gameManager = null;
     private Handler comHandler;
+    private GameRunnable gameRunnable = null;
 
     private String message;
 
@@ -39,7 +40,7 @@ public class GameFragment extends Fragment {
     private final String INIT = "INIT";
     private final String GOAL = "GOAL";
 
-    private final int FPS = 20;
+    private final int FPS = 15;
 
     private PingGameClass pingGame;
 
@@ -48,7 +49,6 @@ public class GameFragment extends Fragment {
     private Runnable actionUp;
     private Runnable actionDown;
 
-//    private OnGameFragmentInteractionListener mListener;
 
 
     public void setGameFragment(GameCommManager manager, String name, Handler handler, int level) {
@@ -62,23 +62,15 @@ public class GameFragment extends Fragment {
         return comHandler;
     }
 
+
     public GameCommManager getGameCommManager() {
         return gameManager;
     }
-  /*
+
     @Override
-
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnGameFragmentInteractionListener) {
-            mListener = (OnGameFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnGameFragmentInteractionListener");
-        }
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
-*/
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -127,7 +119,7 @@ public class GameFragment extends Fragment {
         playerRightText.setText("Player 2");
 
 
-        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText, mLevel);
+        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
 
 
 
@@ -143,16 +135,19 @@ public class GameFragment extends Fragment {
         });
 
 
-        if (gameManager.getOwnership()) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    message = INIT + " " + playerName + " " + mLevel;
-                    gameManager.write(message);
-                    new Thread(new GameRunnable(false)).start();
-                }
-            }, 500);
+        if (gameRunnable == null) {
+            if (gameManager.getOwnership()) {
+                gameRunnable = new GameRunnable(false);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        message = INIT + " " + playerName + " " + mLevel;
+                        gameManager.write(message);
+                        new Thread(gameRunnable).start();
+                    }
+                }, 500);
+            }
         }
 
         actionUp = new Runnable() {
@@ -234,12 +229,16 @@ public class GameFragment extends Fragment {
             if ((arg[index].equals(INIT)) && ((arg.length - index) >= 3)) {
                 playerRightText.setText(arg[index + 1]);
                 mLevel = Integer.parseInt(arg[index + 2]);
+                pingGame.setLevel(mLevel);
                 index++;
-                if (!gameManager.getOwnership()) {
-                    message = INIT + " " + playerName + " " + mLevel;
-                    gameManager.write(message);
-                    new Thread(new GameRunnable(true)).start();
+                if (gameRunnable == null) {
+                    if (!gameManager.getOwnership()) {
+                        message = INIT + " " + playerName + " " + mLevel;
+                        gameManager.write(message);
+                        gameRunnable = new GameRunnable(true);
+                        new Thread(gameRunnable).start();
 
+                    }
                 }
             } else if ((arg[index].equals(BALL)) && ((arg.length - index) >= 5)) {
                 pingGame.setState(PingGameClass.PLAYING);
@@ -284,7 +283,6 @@ public class GameFragment extends Fragment {
 
 
             final long tbs = (1000 / FPS);   // time (in milliseconds) between samples
-
 
             try {
 
