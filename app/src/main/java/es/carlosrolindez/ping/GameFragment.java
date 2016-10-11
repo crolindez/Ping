@@ -1,6 +1,7 @@
 package es.carlosrolindez.ping;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -54,6 +56,8 @@ public class GameFragment extends Fragment {
     private ImageView playerRight;
     private ImageView topbar;
     private ImageView bottombar;
+    private ImageView obstacle1;
+    private ImageView obstacle2;
     private ImageButton buttonUp;
     private ImageButton buttonDown;
     private TextView leftScoreText;
@@ -114,6 +118,8 @@ public class GameFragment extends Fragment {
         playerRight = (ImageView) mContentView.findViewById(R.id.player2);
         topbar = (ImageView) mContentView.findViewById(R.id.topbar);
         bottombar = (ImageView) mContentView.findViewById(R.id.bottombar);
+        obstacle1 = (ImageView) mContentView.findViewById(R.id.obstacle1);
+        obstacle2 = (ImageView) mContentView.findViewById(R.id.obstacle2);
         buttonUp = (ImageButton) mContentView.findViewById(R.id.button_up);
         buttonDown = (ImageButton) mContentView.findViewById(R.id.button_down);
         leftScoreText = (TextView) mContentView.findViewById(R.id.leftScore);
@@ -132,7 +138,8 @@ public class GameFragment extends Fragment {
         playerRightText.setText("Player 2");
 
 
-        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText);
+        pingGame = new PingGameClass(ball, playerLeft, playerRight, topbar, bottombar, leftScoreText, rightScoreText,
+                                        obstacle1, obstacle2);
 
 
 
@@ -233,6 +240,7 @@ public class GameFragment extends Fragment {
     }
 
     public void setLevel(int level) {
+        Log.e(TAG,"setLevel " + level);
         int resource;
         int color;
         switch (level) {
@@ -241,18 +249,24 @@ public class GameFragment extends Fragment {
                 color = ContextCompat.getColor(getActivity(), R.color.colorExpert);
                 buttonUp.setImageResource(R.drawable.up_expert);
                 buttonDown.setImageResource(R.drawable.down_expert);
+                obstacle1.setVisibility(View.VISIBLE);
+                obstacle2.setVisibility(View.VISIBLE);
                 break;
             case Constants.LEVEL_HARD:
                 resource = R.drawable.brick_hard;
                 color = ContextCompat.getColor(getActivity(), R.color.colorHard);
                 buttonUp.setImageResource(R.drawable.up_hard);
                 buttonDown.setImageResource(R.drawable.down_hard);
+                obstacle1.setVisibility(View.VISIBLE);
+                obstacle2.setVisibility(View.VISIBLE);
                 break;
             case Constants.LEVEL_MEDIUM:
                 resource = R.drawable.brick_medium;
                 color = ContextCompat.getColor(getActivity(), R.color.colorMedium);
                 buttonUp.setImageResource(R.drawable.up_medium);
                 buttonDown.setImageResource(R.drawable.down_medium);
+                obstacle1.setVisibility(View.INVISIBLE);
+                obstacle2.setVisibility(View.INVISIBLE);
                 break;
             case Constants.LEVEL_EASY:
             default:
@@ -260,6 +274,8 @@ public class GameFragment extends Fragment {
                 color = ContextCompat.getColor(getActivity(), R.color.colorEasy);
                 buttonUp.setImageResource(R.drawable.up_easy);
                 buttonDown.setImageResource(R.drawable.down_easy);
+                obstacle1.setVisibility(View.INVISIBLE);
+                obstacle2.setVisibility(View.INVISIBLE);
         }
 
         ball.setImageResource(resource);
@@ -267,6 +283,8 @@ public class GameFragment extends Fragment {
         playerRight.setImageResource(resource);
         topbar.setImageResource(resource);
         bottombar.setImageResource(resource);
+        obstacle1.setImageResource(resource);
+        obstacle2.setImageResource(resource);
         leftScoreText.setTextColor(color);
         colonScoreText.setTextColor(color);
         rightScoreText.setTextColor(color);
@@ -360,8 +378,9 @@ public class GameFragment extends Fragment {
                         Long timer = System.currentTimeMillis();
                         if (timer > (gameTimer + tbs)) {
                             gameTimer += tbs;
-//TODO Verify getActivity does not return NULL
-                            getActivity().runOnUiThread(new Runnable() {
+                            Activity activity = getActivity();
+                            if (activity==null) break;
+                            activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
 

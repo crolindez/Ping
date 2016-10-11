@@ -143,6 +143,20 @@
                     android:layout_height="1dip"
                     android:id="@+id/bottombar"
                     android:scaleType="fitXY" />
+                <ImageView
+                    android:src="@drawable/brick_easy"
+                    android:layout_width="1dip"
+                    android:layout_height="20dip"
+                    android:id="@+id/obstacle1"
+                    android:scaleType="fitXY"
+                    android:visibility="invisible" />
+                <ImageView
+                    android:src="@drawable/brick_easy"
+                    android:layout_width="1dip"
+                    android:layout_height="20dip"
+                    android:id="@+id/obstacle2"
+                    android:scaleType="fitXY"
+                    android:visibility="invisible"/>
 
             </RelativeLayout>
         </LinearLayout>
