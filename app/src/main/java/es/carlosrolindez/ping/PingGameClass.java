@@ -8,6 +8,8 @@ import android.widget.TextView;
 import java.util.Locale;
 import java.util.Random;
 
+import static java.lang.Math.abs;
+
 
 class PingGameClass {
     private static final String TAG = "PingGameClass";
@@ -69,9 +71,13 @@ class PingGameClass {
     private static final float MIN_LIMIT_Y_PLAYER = INIT_Y_TOP_BAR + (HEIGHT_PLAYER + HEIGHT_BAR) / 2.0f;
     private static final float MAX_LIMIT_Y_PLAYER = INIT_Y_BOTTOM_BAR - (HEIGHT_PLAYER + HEIGHT_BAR) / 2.0f;
 
+    private static final float OBSTACLE_MIN_LIMIT_X_BALL = (WINDOWS_X_SIZE / 2.0f)  - (WIDTH_OBSTACLE + SIZE_BALL) / 2.0f;
+    private static final float OBSTACLE_MAX_LIMIT_X_BALL = (WINDOWS_X_SIZE / 2.0f)  + (WIDTH_OBSTACLE + SIZE_BALL) / 2.0f;
+
     // Game State
     private int gameState;
     private float levelScale;
+    private int mLevel;
 
     private int leftScore, rightScore;
 
@@ -127,7 +133,8 @@ class PingGameClass {
     }
 
     public synchronized void setLevel(int level) {
-        switch (level) {
+        mLevel = level;
+        switch (mLevel) {
             case Constants.LEVEL_EXPERT:
                 levelScale = 2.2f;
                 break;
@@ -210,7 +217,7 @@ class PingGameClass {
     }
 
     public synchronized  int moveBall() { // calculate next ball position and return true if ball bounced on the player
-//TODO bounce obstacles
+
         int result =   mBall.nextPosition(mPlayerLeft.getYPosition());
 
         if (result == GOAL_MOVEMENT) {
@@ -383,42 +390,30 @@ class PingGameClass {
         }
 
         private int nextPosition(float playerYposition) {
-            if (xDelta > 0) {                                       // moving to the right...
+            if (xScaleDelta > 0) {                                  // moving to the right...
                 if ((xPosition) > MAX_LIMIT_X_BALL) {                       // ... GOAL
                     nextX = MAX_LIMIT_X_BALL;
                     nextY = yPosition;
                     return OK_MOVEMENT;
+                } else if ( ((xPosition + xScaleDelta) > OBSTACLE_MIN_LIMIT_X_BALL) &&  // ... bounce on obstacle
+                        (xPosition <= OBSTACLE_MIN_LIMIT_X_BALL)  && (mLevel >= Constants.LEVEL_HARD) ) {
+                    return checkBounceObstacles(OBSTACLE_MIN_LIMIT_X_BALL);
                 } else {
-                    return checkBounceWall();                                 //  ... OK movement
+                    return checkBounceWall();                                       //  ... OK movement
                 }
             } else {                                                // moving to the left...
-                if (xPosition < MIN_LIMIT_X_BALL) {                         // ... GOAL
+                if (xPosition < MIN_LIMIT_X_BALL) {                                 // ... GOAL
                     nextX = xPosition;
                     nextY = yPosition;
                     return GOAL_MOVEMENT;
-                } else if ((xPosition + xScaleDelta) < MIN_LIMIT_X_BALL) {  // ... bounce on left Player
+                } else if ( (xPosition + xScaleDelta) < MIN_LIMIT_X_BALL) {          // ... bounce on left Player
                     return checkBounce(playerYposition);
-                } else return checkBounceWall();                              // ... Ok movement
+                } else if ( ((xPosition + xScaleDelta) < OBSTACLE_MAX_LIMIT_X_BALL) &&  // ... bounce on obstacle
+                            (xPosition >= OBSTACLE_MAX_LIMIT_X_BALL)  && (mLevel >= Constants.LEVEL_HARD) ) {
+                    return checkBounceObstacles(OBSTACLE_MAX_LIMIT_X_BALL);
+                } else return checkBounceWall();                                    // ... Ok movement
             }
         }
-        private int checkBounceWall() {
-            nextX = xPosition + xScaleDelta;
-            if ((yPosition + yScaleDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
-                nextY =  2 * MAX_LIMIT_Y_BALL - yScaleDelta - yPosition;
-                yDelta = -yDelta;
-                yScaleDelta = -yScaleDelta;
-                return BOUNCE_WALL;
-            } else if ((yPosition + yScaleDelta) < MIN_LIMIT_Y_BALL) {
-                nextY = 2 * MIN_LIMIT_Y_BALL - yScaleDelta - yPosition;
-                yScaleDelta = -yScaleDelta;
-                yDelta = -yDelta;
-                return BOUNCE_WALL;
-            } else {
-                nextY = yPosition + yScaleDelta;
-                return OK_MOVEMENT;
-            }
-        }
-
 
         private int checkBounce(float playerYposition) {
             float distX = xPosition- MIN_LIMIT_X_BALL;
@@ -446,16 +441,38 @@ class PingGameClass {
 
                 } else {                                                            //  ... first Player then Wall
                     result = checkBouncePlayer(playerYposition);
+                    xPosition = nextX - xScaleDelta;
+                    yPosition = nextY - yScaleDelta;
                     checkBounceWall();
                     return result;
                 }
 
             } else  {                                                       // between Limits ... only player
                 result = checkBouncePlayer(playerYposition);
+                xPosition = nextX - xScaleDelta;
+                yPosition = nextY - yScaleDelta;
                 checkBounceWall();
                 return result;
             }
 
+        }
+
+        private int checkBounceWall() {
+            nextX = xPosition + xScaleDelta;
+            if ((yPosition + yScaleDelta) > MAX_LIMIT_Y_BALL) {   // checks limits after yDelta
+                nextY =  2 * MAX_LIMIT_Y_BALL - yScaleDelta - yPosition;
+                yDelta = -yDelta;
+                yScaleDelta = -yScaleDelta;
+                return BOUNCE_WALL;
+            } else if ((yPosition + yScaleDelta) < MIN_LIMIT_Y_BALL) {
+                nextY = 2 * MIN_LIMIT_Y_BALL - yScaleDelta - yPosition;
+                yScaleDelta = -yScaleDelta;
+                yDelta = -yDelta;
+                return BOUNCE_WALL;
+            } else {
+                nextY = yPosition + yScaleDelta;
+                return OK_MOVEMENT;
+            }
         }
 
         private int checkBouncePlayer(float playerYposition)  {
@@ -464,7 +481,7 @@ class PingGameClass {
             float impactYposition = yPosition + distY;
 
 
-            if ((playerYposition-(HEIGHT_PLAYER/2)-(mBall.getYSize()/2)) >= impactYposition) {
+            if ((playerYposition-(HEIGHT_PLAYER/2)-(SIZE_BALL/2)) >= impactYposition) {
                 nextX = xPosition + xScaleDelta;
                 return GOAL_MOVEMENT;
             } else if ((playerYposition-(HEIGHT_PLAYER/4)-(SIZE_BALL/2)) >= impactYposition)  { // Up area
@@ -506,6 +523,30 @@ class PingGameClass {
             return BOUNCE_PLAYER;
 
         }
+
+        private int checkBounceObstacles(float obstacleLimit)  {
+            float distX = abs(xPosition - obstacleLimit);
+            float distY = distX * yScaleDelta / xScaleDelta;
+            float impactYposition = yPosition + distY;
+
+
+            if ( ( ( ( INIT_Y_OBSTACLE_1-(HEIGHT_OBSTACLE/2)-(SIZE_BALL/2) ) < impactYposition  )  &&   // Obstacle 1
+                   ( ( INIT_Y_OBSTACLE_1+(HEIGHT_OBSTACLE/2)+(SIZE_BALL/2) ) >= impactYposition ) ) ||
+                 ( ( ( INIT_Y_OBSTACLE_2-(HEIGHT_OBSTACLE/2)-(SIZE_BALL/2) ) < impactYposition  )  &&   // Obstacle 2
+                   ( ( INIT_Y_OBSTACLE_2+(HEIGHT_OBSTACLE/2)+(SIZE_BALL/2) ) >= impactYposition ) ) ) {
+
+                nextX = 2 * obstacleLimit - xScaleDelta - xPosition;
+                nextY = yPosition + yScaleDelta;
+                xDelta = -xDelta;
+                xScaleDelta = -xScaleDelta;
+                return BOUNCE_WALL;
+
+            }
+
+            return checkBounceWall();
+
+        }
+
 
         private double randomDelta() {
             return ( (BALL_Y_GPF) / 2) * rand.nextGaussian();

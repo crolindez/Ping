@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -240,7 +240,6 @@ public class GameFragment extends Fragment {
     }
 
     public void setLevel(int level) {
-        Log.e(TAG,"setLevel " + level);
         int resource;
         int color;
         switch (level) {
