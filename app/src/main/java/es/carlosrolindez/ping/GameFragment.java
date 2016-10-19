@@ -324,10 +324,11 @@ public class GameFragment extends Fragment {
                 pingGame.setPlayerRight(Float.parseFloat(arg[index + 1]));
                 index += 2;
             } else if (arg[index].equals(GOAL)) {
+                pingGame.setState(PingGameClass.GOAL);
                 pingGame.leftGoal();
                 pingGame.reset();
                 tg.startTone(ToneGenerator.TONE_DTMF_2, 250);
-                pingGame.setState(PingGameClass.GOAL);
+
                 index++;
             } else {
                 index++; //rubbish

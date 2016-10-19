@@ -477,12 +477,13 @@ class PingGameClass {
 
         private int checkBouncePlayer(float playerYposition)  {
             float distX = xPosition- MIN_LIMIT_X_BALL;
-            float distY = distX * yScaleDelta / xScaleDelta;
+            float distY = distX * yScaleDelta / (-xScaleDelta);
+            float distX_comp = -xScaleDelta - distX;
             float impactYposition = yPosition + distY;
-
 
             if ((playerYposition-(HEIGHT_PLAYER/2)-(SIZE_BALL/2)) >= impactYposition) {
                 nextX = xPosition + xScaleDelta;
+                nextY = yPosition + yScaleDelta;
                 return GOAL_MOVEMENT;
             } else if ((playerYposition-(HEIGHT_PLAYER/4)-(SIZE_BALL/2)) >= impactYposition)  { // Up area
                 if (yDelta > 0) {
@@ -515,18 +516,21 @@ class PingGameClass {
                 yScaleDelta = yDelta * levelScale;
             } else {
                 nextX = xPosition + xScaleDelta;
+                nextY = yPosition + yScaleDelta;
                 return GOAL_MOVEMENT;
             }
-            nextX = 2 * MIN_LIMIT_X_BALL - xScaleDelta - xPosition;
             xDelta = -xDelta;
             xScaleDelta = -xScaleDelta;
+            nextX = 2 * MIN_LIMIT_X_BALL + xScaleDelta - xPosition;
+            nextY = impactYposition + distX_comp*yScaleDelta/xScaleDelta;
+
             return BOUNCE_PLAYER;
 
         }
 
         private int checkBounceObstacles(float obstacleLimit)  {
             float distX = abs(xPosition - obstacleLimit);
-            float distY = distX * yScaleDelta / xScaleDelta;
+            float distY = distX * yScaleDelta / abs(xScaleDelta);
             float impactYposition = yPosition + distY;
 
 
